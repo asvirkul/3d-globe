@@ -23,7 +23,8 @@ async function init() {
   const engine = new GlobeEngine(container);
   const renderer = engine.getRenderer();
   const assets = await loadGlobeAssets();
-
+  const camera = engine.getCamera();
+  
 
   const earth = createEarth({
     radius:  EARTH_RADIUS , 
@@ -49,7 +50,12 @@ async function init() {
   });
   engine.addController(cameraController);
   
-  const orbit = new OrbitController(cameraController, container)
+  const orbit = new OrbitController(
+    cameraController, 
+    renderer.domElement, 
+    world.earthGroup,
+    camera
+  );
   
   const clouds = createCloudLayers(renderer, {
     radius: EARTH_RADIUS,
@@ -65,8 +71,6 @@ async function init() {
   );
   
   engine.addController(cloudController);
-  
-  const camera = engine.getCamera();
   
   const stars = createStars({
     radius: computeStarsRadius(camera),
