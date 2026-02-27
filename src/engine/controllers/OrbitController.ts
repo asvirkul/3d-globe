@@ -11,9 +11,10 @@ export class OrbitController {
   private sensitivity = 1;
   private raycaster = new THREE.Raycaster();
   private mouse = new THREE.Vector2();
-  private camera: THREE.Camera;
+  private camera: THREE.PerspectiveCamera;
   private globe: THREE.Object3D;
   private isDraggingGlobe = false;
+  private abort = new AbortController();
   public onStartDrag?: () => void;
   public onEndDrag?: () => void;
 
@@ -23,19 +24,19 @@ export class OrbitController {
     cameraController: CameraController,
     dom: HTMLElement,
     globe: THREE.Object3D,
-    camera: THREE.Camera
+    camera: THREE.PerspectiveCamera
   ) {
     this.cameraController = cameraController;
     this.dom = dom;
     this.globe = globe;
     this.camera = camera;
 
-    dom.addEventListener('pointerdown', this.onDown);
-    dom.addEventListener('pointermove', this.onMove);
-    dom.addEventListener('pointerup', this.onUp);
-    dom.addEventListener('pointercancel', this.onUp);
-    dom.addEventListener('pointerleave', this.onUp);
-    dom.addEventListener('wheel', this.onWheel, { passive: false });
+    dom.addEventListener('pointerdown', this.onDown, { signal: this.abort.signal });
+    dom.addEventListener('pointermove', this.onMove, { signal: this.abort.signal });
+    dom.addEventListener('pointerup', this.onUp, { signal: this.abort.signal });
+    dom.addEventListener('pointercancel', this.onUp, { signal: this.abort.signal });
+    dom.addEventListener('pointerleave', this.onUp, { signal: this.abort.signal });
+    dom.addEventListener('wheel', this.onWheel, { passive: false, signal: this.abort.signal });
   }
   
   private onDown = (e: PointerEvent) => {
@@ -48,7 +49,6 @@ export class OrbitController {
 
     if (this.pointers.size === 0) {
         const intersects = this.raycaster.intersectObject(this.globe);
-        console.log(intersects);
         if (intersects.length === 0) return;
         this.isDraggingGlobe = true;
     }
@@ -67,6 +67,7 @@ export class OrbitController {
   };
 
   private onMove = (e: PointerEvent) => {
+    
     if (!this.pointers.has(e.pointerId)) return;
     if (!this.isDraggingGlobe) return;
 
@@ -81,11 +82,13 @@ export class OrbitController {
         this.lastRotate.x = e.clientX;
         this.lastRotate.y = e.clientY;
 
-        const width = this.dom.clientWidth;
-        const height = this.dom.clientHeight;
-        const lonDelta = (dx / width) * 180 * this.sensitivity;
-        const latDelta = (dy / height) * 180 * this.sensitivity;
-
+        
+        const baseFov = this.cameraController.getBaseFov();
+        const fovFactor = this.camera.fov / baseFov;
+        const degreesPerPixel = 0.15;
+        const lonDelta = dx * degreesPerPixel * this.sensitivity * fovFactor;
+        const latDelta = dy * degreesPerPixel * this.sensitivity * fovFactor;
+        
         this.cameraController.addLatLon(
             -latDelta,
             -lonDelta
@@ -150,6 +153,13 @@ export class OrbitController {
     const dy = p1.clientY - p2.clientY;
 
     return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  public dispose() {
+    this.abort.abort();
+    this.pointers.clear();
+    this.lastPinchDistance = null;
+    this.isDraggingGlobe = false;
   }
 
   public update() {}

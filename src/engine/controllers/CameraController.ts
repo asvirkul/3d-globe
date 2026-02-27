@@ -15,36 +15,43 @@ export class CameraController {
   private camera: THREE.PerspectiveCamera;
   private radius: number;
 
+  private readonly baseFov = 45;
+  private readonly maxAdaptiveFov = 68;
+  private readonly fovStep = 1.5;
+
   private target = new THREE.Vector3();
   private currentTarget = new THREE.Vector3();
 
   private currentDistance: number;
   private targetDistance: number;
+  
+  private defMinDistance = 0;
+  private defMaxDistance = 0; 
 
-  private minDistance: number;
-  private maxDistance: number;
+  private minDistance = 0;
+  private maxDistance = 0;
+
   private damping: number;
-
   private lat = 0;
   private lon = 0;
 
   private minLat: number;
-  private maxLat: number;
+  private maxLat: number;  
 
   constructor(
     camera: THREE.PerspectiveCamera,
-    options: CameraControllerOptions
+    options: CameraControllerOptions,
   ) {
     this.camera = camera;
     this.radius = options.radius;
+    
+    this.defMinDistance = options.minDistance ?? this.radius * 1.5;
+    this.defMaxDistance = options.maxDistance ?? this.radius * 3.5;
 
     const startDistance = options.distance ?? this.radius * 2.5;
 
     this.currentDistance = startDistance;
     this.targetDistance = startDistance;
-
-    this.minDistance = options.minDistance ?? this.radius * 1.5;
-    this.maxDistance = options.maxDistance ?? this.radius * 3.5;
 
     this.damping = options.damping ?? 0.08;
 
@@ -56,6 +63,57 @@ export class CameraController {
     this.currentTarget.copy(this.target);
     this.camera.position.set(0, 0, this.currentDistance);
     this.camera.lookAt(0, 0, 0);
+    this.recomputeDistanceLimits();
+  }
+
+  private getFitMinDistance(
+    radius: number,
+    fovDeg: number,
+    aspect: number,
+    padding = 1.06 
+  ): number {
+    const vHalf = THREE.MathUtils.degToRad(fovDeg * 0.5);
+    const hHalf = Math.atan(Math.tan(vHalf) * aspect);
+    const limitingHalfFov = Math.max(Math.min(vHalf, hHalf), 1e-3);
+    return (radius / Math.sin(limitingHalfFov)) * padding;
+  }
+
+  private recomputeDistanceLimits() {
+    const baseMin = this.defMinDistance;
+    const baseMax = this.defMaxDistance;
+
+    let nextFov = this.baseFov;
+    let fitMin = this.getFitMinDistance(this.radius, nextFov, this.camera.aspect, 1.06);
+
+    while (fitMin > baseMax && nextFov < this.maxAdaptiveFov) {
+        nextFov = Math.min(this.maxAdaptiveFov, nextFov + this.fovStep);
+        fitMin = this.getFitMinDistance(this.radius, nextFov, this.camera.aspect, 1.06);
+    }
+
+    const nextMin = baseMin;
+    const nextMax = Math.max(baseMax, fitMin); 
+
+    this.camera.fov = nextFov;
+    this.camera.updateProjectionMatrix();
+
+    this.minDistance = nextMin;
+    this.maxDistance = nextMax;
+
+    const enforcedMin = Math.max(fitMin, this.minDistance);
+    this.targetDistance = THREE.MathUtils.clamp(Math.max(this.targetDistance, enforcedMin), this.minDistance, this.maxDistance);
+    this.currentDistance = THREE.MathUtils.clamp(Math.max(this.currentDistance, enforcedMin), this.minDistance, this.maxDistance);
+  }
+
+  public onResize(_width: number, _height: number) {
+    this.recomputeDistanceLimits();
+  }
+
+  public getMinDistance(): number {
+    return this.minDistance;
+  }
+  
+  public getBaseFov(): number {
+    return this.baseFov;
   }
 
   public lookAtLatLon(lat: number, lon: number) {
@@ -63,8 +121,9 @@ export class CameraController {
     this.currentTarget.copy(this.target);
   }
 
-  public flyToLatLon(lat: number, lon: number) {
+  public flyToLatLon(lat: number, lon: number, distance?: number) {
     this.setLatLon(lat, lon);
+    this.setDistance(distance ?? this.minDistance);
   }
 
   public addLatLon(dLat: number, dLon: number = 0) {
@@ -81,26 +140,24 @@ export class CameraController {
     );
     }
 
-   public setDistance(distance: number) {
+  public setDistance(distance: number) {
     this.targetDistance = THREE.MathUtils.clamp(
         distance,
         this.minDistance,
         this.maxDistance
     );
-    }
+  }
 
-   public getDistance() {
+  public getDistance() {
     return this.currentDistance;
-   }
+  }
 
-   public getZoomNormalized(): number {
-    return THREE.MathUtils.clamp(
-        (this.currentDistance - this.minDistance) /
-        (this.maxDistance - this.minDistance),
-        0,
-        1
-    );
-    }
+  public getZoomNormalized(): number {
+    const range = this.defMaxDistance - this.defMinDistance;
+    if (range <= Number.EPSILON) return 0;
+    return THREE.MathUtils.clamp((this.currentDistance - this.defMinDistance) / range, 0, 1);
+  }
+
 
   private setLatLon(lat: number, lon: number) {
     this.lat = THREE.MathUtils.clamp(lat, this.minLat, this.maxLat);
