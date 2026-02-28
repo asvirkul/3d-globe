@@ -1,26 +1,39 @@
 import * as THREE from 'three';
 
+export type Controller = {
+  update(delta: number): void;
+  dispose?(): void;
+  onResize?(width: number, height: number): void;
+};
+
+
 export class GlobeEngine {
-  private controllers: Array<{ update(delta: number): void }> = [];
   private lastTime = performance.now();
   private container: HTMLElement;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private rafId: number | null = null;
+  private resizeObserver?: ResizeObserver;
+  private lastWidth = 0;
+  private lastHeight = 0;
 
-
-  
   private resize = () => {
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
-    if (width === 0 || height === 0) return;
+    if (!width || !height) return;
+    if (width === this.lastWidth && height === this.lastHeight) return;
+
+    this.lastWidth = width;
+    this.lastHeight = height;
 
     this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
 
-    this.renderer.setSize(width, height, false);
+    this.controllers.forEach(c => c.onResize?.(width, height));
+
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setSize(width, height);
+
   };
 
   constructor(container: HTMLElement) {
@@ -48,13 +61,17 @@ export class GlobeEngine {
     this.setupLighting();
 
     container.appendChild(this.renderer.domElement);
-    window.addEventListener('resize', this.resize);
-    this.resize();
+
+    this.resizeObserver = new ResizeObserver(() => {
+      this.resize();
+    });
+
+    this.resizeObserver.observe(this.container);
+    this.resize(); 
     
   }
 
   private setupLighting() {
-
     const key = new THREE.DirectionalLight(0xffffff, 1.6);
     key.position.set(6, 4, 6);
     this.scene.add(key);
@@ -67,14 +84,18 @@ export class GlobeEngine {
     this.scene.add(ambient);
   }
 
+  private controllers: Controller[] = [];
 
 
   public addController(controller: { update(delta: number): void }) {
     this.controllers.push(controller);
   }
 
+  
+
   public start() {
     if (this.rafId === null) {
+      this.lastTime = performance.now();
       this.render();
     }
   }
@@ -101,9 +122,43 @@ export class GlobeEngine {
 
   public destroy() {
     this.stop();
-    window.removeEventListener('resize', this.resize);
+    this.resizeObserver?.disconnect();
+    for (const c of this.controllers) {
+      c.dispose?.();
+    }
+    this.controllers = [];
+
+    this.scene.traverse((obj) => {
+      const anyObj = obj as any;
+
+      if (anyObj.geometry) {
+        anyObj.geometry.dispose?.();
+      }
+
+      if (anyObj.material) {
+        const materials = Array.isArray(anyObj.material) ? anyObj.material : [anyObj.material];
+
+        for (const m of materials) {
+          for (const key in m) {
+            const value = (m as any)[key];
+            if (value && value.isTexture) {
+              value.dispose?.();
+            }
+          }
+          m.dispose?.();
+        }
+      }
+    });
+
+    this.scene.clear();
     this.renderer.dispose();
-    this.container.removeChild(this.renderer.domElement);
+    this.renderer.forceContextLoss();
+
+    if (this.renderer.domElement.parentNode) {
+      this.renderer.domElement.parentNode.removeChild(
+        this.renderer.domElement
+      );
+    }
   }
 
   public getCamera(): THREE.PerspectiveCamera {
@@ -132,3 +187,4 @@ export class GlobeEngine {
   };
   
 }
+  
