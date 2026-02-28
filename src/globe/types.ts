@@ -1,0 +1,8 @@
+export interface GlobeAPI {
+  start(): void;
+  stop(): void;
+  destroy(): void;
+  setAutoRotate(enabled: boolean): void;
+  flyToLatLon(lat: number, lon: number, distance?: number): void;
+  highlightCountry(iso: string | null): void;
+}
