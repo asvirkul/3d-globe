@@ -11,23 +11,19 @@ import { StarsController } from '../engine/controllers/StarsController';
 import { computeStarsRadius } from '../engine/utils/stars';
 import { createLights } from '../engine/objects/Lights';
 import { LightController } from '../engine/controllers/LightController';
-import { loadGlobeAssets } from '../engine/utils/loadGlobeAssets';
-import { loadCountries } from "./borders/loadCountries";
+import type { GlobeData } from './loadGlobeData';
 import { createCountryBordersLayer } from "./borders/countryBorderLayer";
 import type { GlobeAPI } from "./types";
 
-export async function createGlobe(container: HTMLElement): Promise<GlobeAPI> {
+export function createGlobe(container: HTMLElement, data: GlobeData): GlobeAPI {
   const EARTH_RADIUS = 200;
 
   const engine = new GlobeEngine(container);
   const renderer = engine.getRenderer();
   const camera = engine.getCamera();
+  const { assets, countries } = data;
 
-  const [assets, countries] = await Promise.all([
-    loadGlobeAssets(),
-    loadCountries(),
-  ]);
-
+  
   const earth = createEarth({
     radius: EARTH_RADIUS,
     texture: assets.earth,
