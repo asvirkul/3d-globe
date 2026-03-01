@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import type { Controller } from "../GlobeEngine";
 
-export class LightController {
+export class LightController implements Controller {
   private material: THREE.ShaderMaterial;
   private time = 0;
 
@@ -8,7 +9,7 @@ export class LightController {
     this.material = material;
   }
 
-  update(delta: number) {
+  update(delta: number): void {
     this.time += delta * 0.05; 
 
     const pulse = 0.75 + 0.25 * Math.sin(this.time);

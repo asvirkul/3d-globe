@@ -1,7 +1,8 @@
 import * as THREE from 'three';
+import type { Controller } from '../GlobeEngine';
 import { CameraController } from './CameraController';
 
-export class StarsController {
+export class StarsController implements Controller {
 
   private time = 0;
 
@@ -11,7 +12,7 @@ export class StarsController {
     private cameraController: CameraController
   ) {}
 
-  update(delta: number) {
+  update(delta: number): void {
 
     this.stars.position.copy(this.camera.position);
 

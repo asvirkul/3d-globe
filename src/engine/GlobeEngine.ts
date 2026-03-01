@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 
-export type Controller = {
+export interface Controller {
   update(delta: number): void;
-  dispose?(): void;
   onResize?(width: number, height: number): void;
-};
-
+  dispose?(): void;
+} 
 
 export class GlobeEngine {
   private lastTime = performance.now();
@@ -86,8 +85,7 @@ export class GlobeEngine {
 
   private controllers: Controller[] = [];
 
-
-  public addController(controller: { update(delta: number): void }) {
+  public addController(controller: Controller) {
     this.controllers.push(controller);
   }
 

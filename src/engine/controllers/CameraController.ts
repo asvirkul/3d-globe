@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { Controller } from '../../engine/GlobeEngine';
 import { lon2xyz } from '../utils/geo';
 
 export type CameraControllerOptions = {
@@ -11,7 +12,7 @@ export type CameraControllerOptions = {
   maxDistance?: number;
 };
 
-export class CameraController {
+export class CameraController implements Controller {
   private camera: THREE.PerspectiveCamera;
   private radius: number;
 
@@ -104,7 +105,7 @@ export class CameraController {
     this.currentDistance = THREE.MathUtils.clamp(Math.max(this.currentDistance, enforcedMin), this.minDistance, this.maxDistance);
   }
 
-  public onResize(_width: number, _height: number) {
+  public onResize(_width: number, _height: number): void {
     this.recomputeDistanceLimits();
   }
 
@@ -148,7 +149,7 @@ export class CameraController {
     );
   }
 
-  public getDistance() {
+  public getDistance(): number {
     return this.currentDistance;
   }
 
@@ -168,7 +169,7 @@ export class CameraController {
     );
   }
 
-  public update(delta: number) {
+  public update(delta: number): void {
     const t = 1 - Math.exp(-this.damping * delta);
 
     this.currentTarget.lerp(this.target, t);

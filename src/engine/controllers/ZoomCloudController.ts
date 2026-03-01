@@ -1,7 +1,8 @@
 import * as THREE from 'three';
+import type { Controller } from "../GlobeEngine";
 import { CameraController } from './CameraController';
 
-export class CloudController {
+export class CloudController implements Controller {
   private cameraController: CameraController;
   private clouds: THREE.Object3D;
 
@@ -13,7 +14,7 @@ export class CloudController {
     this.clouds = clouds;
   }
 
-  update() {
+  update(_delta: number): void {
     const base = this.clouds.getObjectByName('CloudsBase') as THREE.Mesh;
     const over = this.clouds.getObjectByName('CloudsOvercast') as THREE.Mesh;
     if (!base || !over) return;

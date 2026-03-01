@@ -1,21 +1,22 @@
-import * as THREE from 'three';
+import { CameraController } from "./CameraController";
+import type { Controller } from "../GlobeEngine";
 
 export type EarthControllerOptions = {
   autoRotate?: boolean;
   rotateSpeed?: number;
 };
 
-export class EarthController {
-  private earth: THREE.Object3D;
+export class EarthController implements Controller {
+  private cameraController: CameraController;
   private autoRotate: boolean;
   private rotateSpeed: number;
   private initialAutoRotate: boolean;
 
   constructor(
-    earth: THREE.Object3D,
+    cameraController: CameraController,
     options: EarthControllerOptions = {}
   ) {
-    this.earth = earth;
+    this.cameraController = cameraController;
 
     this.initialAutoRotate = options.autoRotate ?? true; 
     this.autoRotate = this.initialAutoRotate;
@@ -37,9 +38,9 @@ export class EarthController {
     this.rotateSpeed = speed;
   }
 
-  public update(delta: number) {
+  public update(delta: number): void {
     if (!this.autoRotate) return;
 
-    this.earth.rotation.y += this.rotateSpeed * delta;
+    this.cameraController.addLatLon(0, this.rotateSpeed * delta);
   }
 }

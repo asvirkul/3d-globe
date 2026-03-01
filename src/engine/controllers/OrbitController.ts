@@ -1,7 +1,8 @@
 import * as THREE from 'three';
+import type { Controller } from "../GlobeEngine";
 import { CameraController } from './CameraController';
 
-export class OrbitController {
+export class OrbitController implements Controller {
   private cameraController: CameraController;
   private dom: HTMLElement;
   private pointers = new Map<number, PointerEvent>();
@@ -155,12 +156,12 @@ export class OrbitController {
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  public dispose() {
+  public dispose(): void {
     this.abort.abort();
     this.pointers.clear();
     this.lastPinchDistance = null;
     this.isDraggingGlobe = false;
   }
 
-  public update() {}
+  public update(_delta: number): void {}
 }
