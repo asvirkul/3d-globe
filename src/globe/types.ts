@@ -6,3 +6,7 @@ export interface GlobeAPI {
   flyToLatLon(lat: number, lon: number, distance?: number): void;
   highlightCountry(iso: string | null): void;
 }
+
+export type Result<T, E = string> =
+  | { ok: true; value: T }
+  | { ok: false; error: E };
