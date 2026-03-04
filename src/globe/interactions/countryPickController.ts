@@ -7,6 +7,7 @@ import { findCountryByLatLon } from '../borders/countryLookup';
 
 type countryPickHandlers = {
     onPick?: (iso : string | null) => void;
+    canInteract?: () => boolean;
 }
 
 export class CountryPickController implements Controller {
@@ -43,7 +44,6 @@ export class CountryPickController implements Controller {
 
     private onDown = (e: PointerEvent) => {
         if (e.button !== 0) return;
-        
         this.isPointerDown = true;
         this.downX = e.clientX;
         this.downY = e.clientY;
@@ -52,19 +52,19 @@ export class CountryPickController implements Controller {
     private onUp = (e: PointerEvent) => {
         if (!this.isPointerDown) return;
         this.isPointerDown = false;
+
         const dx = e.clientX - this.downX;
         const dy = e.clientY - this.downY;
         const moved = Math.hypot(dx, dy);
-
-        if (moved <= this.tapThreshold) {
-            const iso = this.pickIso(e.clientX, e.clientY);
-            this.handlers.onPick?.(iso);
-        }
+        
+        if (this.handlers.canInteract?.() === false) return;
+        if (moved >= this.tapThreshold) return;
+        const iso = this.pickIso(e.clientX, e.clientY);
+        this.handlers.onPick?.(iso);
     }
 
     private pickIso(clientX: number, clientY: number): string | null {
         const rect = this.dom.getBoundingClientRect();
-
         this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
         this.mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 

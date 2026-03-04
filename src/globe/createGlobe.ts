@@ -15,10 +15,16 @@ import { createLights } from '../engine/objects/Lights';
 import { LightController } from '../engine/controllers/LightController';
 import { createCountryBordersLayer } from "./borders/countryBorderLayer";
 import { CountryPickController } from './interactions/countryPickController';
+import { CountryFocusController } from './interactions/countryFocusController';
+import { InteractionCoordinator } from './interactions/interactionCoordinator';
 
-export function createGlobe(container: HTMLElement, data: GlobeData, options: CreateGlobeOptions): GlobeAPI {
+export function createGlobe(
+  container: HTMLElement, 
+  data: GlobeData,
+  options: CreateGlobeOptions = {}
+): GlobeAPI {
   const EARTH_RADIUS = 200;
-
+  const minCountryZoom = 0.4;
   const engine = new GlobeEngine(container);
   const renderer = engine.getRenderer();
   const camera = engine.getCamera();
@@ -106,20 +112,37 @@ export function createGlobe(container: HTMLElement, data: GlobeData, options: Cr
 
   cameraController.lookAtLatLon(0, 0);
 
+  const interactionCoordinator = new InteractionCoordinator(bordersLayer.highlight);
+  const canCountryInteract = () => cameraController.getZoomNormalized() <= minCountryZoom;
+
   const pickController = new CountryPickController(
     renderer.domElement,
     earth.mesh,
     camera,
     countries,
-     {
+    {
       onPick: (iso) => {
-        bordersLayer.highlight(iso);
+        interactionCoordinator.setSelected(iso);
         options.onCountryPick?.(iso);
+      },
+      canInteract: canCountryInteract,
+    }
+  );
+
+  const focusController = new CountryFocusController(
+    earth.mesh,
+    camera,
+    countries,
+    {
+      canInteract: canCountryInteract,
+      onFocus: (iso) => {
+        interactionCoordinator.setFocused(iso);
       }
     }
   );
 
   engine.addController(pickController);
+  engine.addController(focusController);
 
   engine.warmup();
 
