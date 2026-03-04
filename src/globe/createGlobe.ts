@@ -1,3 +1,5 @@
+import type { GlobeData } from './loadGlobeData';
+import type { GlobeAPI, CreateGlobeOptions } from "./types";
 import { GlobeEngine } from '../engine/GlobeEngine';
 import { GlobeWorld } from '../engine/world/GlobeWorld';
 import { createEarth } from '../engine/objects/Earth';
@@ -11,11 +13,10 @@ import { StarsController } from '../engine/controllers/StarsController';
 import { computeStarsRadius } from '../engine/utils/stars';
 import { createLights } from '../engine/objects/Lights';
 import { LightController } from '../engine/controllers/LightController';
-import type { GlobeData } from './loadGlobeData';
 import { createCountryBordersLayer } from "./borders/countryBorderLayer";
-import type { GlobeAPI } from "./types";
+import { CountryPickController } from './interactions/countryPickController';
 
-export function createGlobe(container: HTMLElement, data: GlobeData): GlobeAPI {
+export function createGlobe(container: HTMLElement, data: GlobeData, options: CreateGlobeOptions): GlobeAPI {
   const EARTH_RADIUS = 200;
 
   const engine = new GlobeEngine(container);
@@ -23,13 +24,13 @@ export function createGlobe(container: HTMLElement, data: GlobeData): GlobeAPI {
   const camera = engine.getCamera();
   const { assets, countries } = data;
 
-  
+
   const earth = createEarth({
     radius: EARTH_RADIUS,
     texture: assets.earth,
   });
 
-  const world = new GlobeWorld(earth);
+  const world = new GlobeWorld(earth.group);
   engine.add(world.root);
 
   const cameraController = new CameraController(camera, {
@@ -104,6 +105,21 @@ export function createGlobe(container: HTMLElement, data: GlobeData): GlobeAPI {
   engine.addController(lightController);
 
   cameraController.lookAtLatLon(0, 0);
+
+  const pickController = new CountryPickController(
+    renderer.domElement,
+    earth.mesh,
+    camera,
+    countries,
+     {
+      onPick: (iso) => {
+        bordersLayer.highlight(iso);
+        options.onCountryPick?.(iso);
+      }
+    }
+  );
+
+  engine.addController(pickController);
 
   engine.warmup();
 

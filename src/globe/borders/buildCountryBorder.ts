@@ -1,11 +1,9 @@
 import * as THREE from "three";
 import { lon2xyz } from "../../engine/utils/geo";
-import type { CountryFeature } from "./loadCountries";
-
-type LonLat = [number, number];
+import type { CountryFeature } from "./types";
 
 const BORDER_MATERIAL = new THREE.LineBasicMaterial({
-  color: 0xfffff,
+  color: 0xffffff,
   transparent: true,
   opacity: 0.5,
 });
@@ -17,40 +15,31 @@ export function buildCountryBorder(
 ): THREE.Group {
 
   const group = new THREE.Group();
-  const geometry = feature.geometry;
+  const g = feature.geometry;
 
-  if (geometry.type !== "Polygon" && geometry.type !== "MultiPolygon") {
-    console.warn("Unsupported geometry type:", geometry.type);
-    return group;
-  }
-  
   const polygons =
-  geometry.type === "Polygon"
-    ? [geometry.coordinates]
-    : geometry.coordinates;
+    g.type === "Polygon"
+      ? [g.coordinates]
+      : g.coordinates;
 
   for (const polygon of polygons) {
-    if (!polygon || !polygon.length) continue;
+    if (!polygon.length) continue;
 
-    const outerRing = polygon[0] as LonLat[] | undefined;
+    const outerRing = polygon[0];
     if (!outerRing || outerRing.length < 3) continue;
 
     const points: THREE.Vector3[] = [];
 
-    for (const coord of outerRing) {
-        if (!coord || coord.length < 2) continue;
-
-        const [lon, lat] = coord;
-        if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue;
-
-        points.push(lon2xyz(lat, lon, radius + altitude));
+    for (const [lon, lat] of outerRing) {
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue;
+      points.push(lon2xyz(lat, lon, radius + altitude));
     }
 
     if (points.length < 3) continue;
 
-    const first = points[0];
-    const last = points[points.length - 1];
-    if (!first.equals(last)) points.push(first.clone());
+    if (!points[0].equals(points[points.length - 1])) {
+      points.push(points[0].clone());
+    }
 
     const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
     const line = new THREE.Line(lineGeo, BORDER_MATERIAL);

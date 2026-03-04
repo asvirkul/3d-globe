@@ -8,7 +8,12 @@ export type EarthOptions = {
   withAtmosphere?: boolean;
 };
 
-export function createEarth(options: EarthOptions = {}): THREE.Group {
+type EarthObject = {
+  group: THREE.Group;
+  mesh: THREE.Mesh;
+};
+
+export function createEarth(options: EarthOptions = {}): EarthObject {
   const {
     radius = 200,
     widthSegments = 64,
@@ -25,7 +30,7 @@ export function createEarth(options: EarthOptions = {}): THREE.Group {
     widthSegments,
     heightSegments
   );
-
+  
   const material = new THREE.MeshStandardMaterial({
     map: texture,
   });
@@ -74,5 +79,8 @@ export function createEarth(options: EarthOptions = {}): THREE.Group {
     group.add(atmosphereMesh);
   }
 
-  return group;
+  return {
+    group,
+    mesh: earthMesh,
+  };
 }

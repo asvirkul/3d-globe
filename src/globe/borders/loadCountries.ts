@@ -1,19 +1,37 @@
-export type CountryFeature = {
-  type: "Feature";
-  properties: {
-    iso_a2: string;
-  };
-  geometry: {
-    type: "Polygon" | "MultiPolygon";
-    coordinates: number[][][] | number[][][][];
-  };
-};
+import type { Result } from '../types';
+import type { CountriesMap,  BBox, CountryGeometry, CountryFeature } from './types';
 
-type Result<T> = 
-  | { ok: true, value: T }
-  | { ok: false, error: string };
+export function computeBB(geometry: CountryGeometry): BBox {
+  let minLon = Infinity;
+  let minLat = Infinity;
+  let maxLon = -Infinity;
+  let maxLat = -Infinity;
 
-export type CountriesMap = Map<string, CountryFeature>;
+  function expand(lon: number, lat: number) {
+    if (lon < minLon) minLon = lon;
+    if (lon > maxLon) maxLon = lon;
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+  }
+
+  if (geometry.type === "Polygon") {
+    for (const ring of geometry.coordinates) {
+      for (const [lon, lat] of ring) {
+        expand(lon, lat);
+      }
+    }
+  } else {
+    for (const polygon of geometry.coordinates) {
+      for (const ring of polygon) {
+        for (const [lon, lat] of ring) {
+          expand(lon, lat);
+        }
+      }
+    }
+  }
+
+  return [minLon, minLat, maxLon, maxLat];
+}
 
 export async function loadCountries(): Promise<Result<CountriesMap>> {
   try {
@@ -58,9 +76,10 @@ export async function loadCountries(): Promise<Result<CountriesMap>> {
         countries.set(iso.toUpperCase(), {
           type: "Feature",
           properties: { iso_a2: iso },
-          geometry
+          geometry,
+          bbox: computeBB(geometry),
         });
-    }
+    }    
     return { ok: true, value: countries };
   } catch (e) {
     return { ok: false, error: 'Failed to load countries data' }

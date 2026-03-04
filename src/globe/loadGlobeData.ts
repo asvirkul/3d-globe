@@ -1,5 +1,5 @@
 import type { GlobeAssets } from '../engine/utils/loadGlobeAssets';
-import type { CountriesMap } from './borders/loadCountries';
+import type { CountriesMap } from './borders/types';
 import type { Result } from './types';
 import { loadGlobeAssets } from '../engine/utils/loadGlobeAssets';
 import { loadCountries } from './borders/loadCountries';

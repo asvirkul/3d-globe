@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { CountriesMap } from "./loadCountries";
+import type { CountriesMap } from "./types";
 import { buildCountryBorder } from "./buildCountryBorder";
 
 export function createCountryBordersLayer(
