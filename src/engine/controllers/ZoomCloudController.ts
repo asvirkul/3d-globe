@@ -1,15 +1,12 @@
 import * as THREE from 'three';
-import type { Controller } from "../GlobeEngine";
+import type { Controller } from '../GlobeEngine';
 import { CameraController } from './CameraController';
 
 export class CloudController implements Controller {
   private cameraController: CameraController;
   private clouds: THREE.Object3D;
 
-  constructor(
-    cameraController: CameraController,
-    clouds: THREE.Object3D
-  ) {
+  constructor(cameraController: CameraController, clouds: THREE.Object3D) {
     this.cameraController = cameraController;
     this.clouds = clouds;
   }
@@ -32,6 +29,5 @@ export class CloudController implements Controller {
 
     baseMat.uniforms.density.value = THREE.MathUtils.lerp(1.0, 2.0, t);
     overMat.uniforms.density.value = THREE.MathUtils.lerp(1.2, 2.7, t);
-
   }
 }

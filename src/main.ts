@@ -11,7 +11,7 @@ async function init() {
     return;
   }
 
-  const globe = createGlobe(container, globeData.value );
+  const globe = createGlobe(container, globeData.value);
 
   globe.start();
 }

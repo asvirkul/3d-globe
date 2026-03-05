@@ -1,6 +1,6 @@
-import * as THREE from "three";
-import { lon2xyz } from "../../engine/utils/geo";
-import type { CountryFeature } from "./types";
+import * as THREE from 'three';
+import { lon2xyz } from '../../engine/utils/geo';
+import type { CountryFeature } from './types';
 
 const BORDER_MATERIAL = new THREE.LineBasicMaterial({
   color: 0xffffff,
@@ -13,14 +13,10 @@ export function buildCountryBorder(
   radius: number,
   altitude = 0.6
 ): THREE.Group {
-
   const group = new THREE.Group();
   const g = feature.geometry;
 
-  const polygons =
-    g.type === "Polygon"
-      ? [g.coordinates]
-      : g.coordinates;
+  const polygons = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
 
   for (const polygon of polygons) {
     if (!polygon.length) continue;

@@ -25,9 +25,9 @@ export class CameraController implements Controller {
 
   private currentDistance: number;
   private targetDistance: number;
-  
+
   private defMinDistance = 0;
-  private defMaxDistance = 0; 
+  private defMaxDistance = 0;
 
   private minDistance = 0;
   private maxDistance = 0;
@@ -37,15 +37,12 @@ export class CameraController implements Controller {
   private lon = 0;
 
   private minLat: number;
-  private maxLat: number;  
+  private maxLat: number;
 
-  constructor(
-    camera: THREE.PerspectiveCamera,
-    options: CameraControllerOptions,
-  ) {
+  constructor(camera: THREE.PerspectiveCamera, options: CameraControllerOptions) {
     this.camera = camera;
     this.radius = options.radius;
-    
+
     this.defMinDistance = options.minDistance ?? this.radius * 1.5;
     this.defMaxDistance = options.maxDistance ?? this.radius * 3.5;
 
@@ -71,7 +68,7 @@ export class CameraController implements Controller {
     radius: number,
     fovDeg: number,
     aspect: number,
-    padding = 1.06 
+    padding = 1.06
   ): number {
     const vHalf = THREE.MathUtils.degToRad(fovDeg * 0.5);
     const hHalf = Math.atan(Math.tan(vHalf) * aspect);
@@ -87,12 +84,12 @@ export class CameraController implements Controller {
     let fitMin = this.getFitMinDistance(this.radius, nextFov, this.camera.aspect, 1.06);
 
     while (fitMin > baseMax && nextFov < this.maxAdaptiveFov) {
-        nextFov = Math.min(this.maxAdaptiveFov, nextFov + this.fovStep);
-        fitMin = this.getFitMinDistance(this.radius, nextFov, this.camera.aspect, 1.06);
+      nextFov = Math.min(this.maxAdaptiveFov, nextFov + this.fovStep);
+      fitMin = this.getFitMinDistance(this.radius, nextFov, this.camera.aspect, 1.06);
     }
 
     const nextMin = baseMin;
-    const nextMax = Math.max(baseMax, fitMin); 
+    const nextMax = Math.max(baseMax, fitMin);
 
     this.camera.fov = nextFov;
     this.camera.updateProjectionMatrix();
@@ -101,8 +98,16 @@ export class CameraController implements Controller {
     this.maxDistance = nextMax;
 
     const enforcedMin = Math.max(fitMin, this.minDistance);
-    this.targetDistance = THREE.MathUtils.clamp(Math.max(this.targetDistance, enforcedMin), this.minDistance, this.maxDistance);
-    this.currentDistance = THREE.MathUtils.clamp(Math.max(this.currentDistance, enforcedMin), this.minDistance, this.maxDistance);
+    this.targetDistance = THREE.MathUtils.clamp(
+      Math.max(this.targetDistance, enforcedMin),
+      this.minDistance,
+      this.maxDistance
+    );
+    this.currentDistance = THREE.MathUtils.clamp(
+      Math.max(this.currentDistance, enforcedMin),
+      this.minDistance,
+      this.maxDistance
+    );
   }
 
   public onResize(_width: number, _height: number): void {
@@ -112,7 +117,7 @@ export class CameraController implements Controller {
   public getMinDistance(): number {
     return this.minDistance;
   }
-  
+
   public getBaseFov(): number {
     return this.baseFov;
   }
@@ -130,23 +135,19 @@ export class CameraController implements Controller {
   public addLatLon(dLat: number, dLon: number = 0): void {
     this.setLatLon(this.lat - dLat, this.lon + dLon);
   }
-  
+
   public addDistance(delta: number): void {
     this.targetDistance += delta;
 
     this.targetDistance = THREE.MathUtils.clamp(
-        this.targetDistance,
-        this.minDistance,
-        this.maxDistance
+      this.targetDistance,
+      this.minDistance,
+      this.maxDistance
     );
-    }
+  }
 
   public setDistance(distance: number): void {
-    this.targetDistance = THREE.MathUtils.clamp(
-        distance,
-        this.minDistance,
-        this.maxDistance
-    );
+    this.targetDistance = THREE.MathUtils.clamp(distance, this.minDistance, this.maxDistance);
   }
 
   public getDistance(): number {
@@ -159,14 +160,11 @@ export class CameraController implements Controller {
     return THREE.MathUtils.clamp((this.currentDistance - this.defMinDistance) / range, 0, 1);
   }
 
-
   private setLatLon(lat: number, lon: number): void {
     this.lat = THREE.MathUtils.clamp(lat, this.minLat, this.maxLat);
     this.lon = lon;
 
-    this.target.copy(
-      lon2xyz(this.lat, this.lon, this.radius)
-    );
+    this.target.copy(lon2xyz(this.lat, this.lon, this.radius));
   }
 
   public update(delta: number): void {
@@ -174,11 +172,7 @@ export class CameraController implements Controller {
 
     this.currentTarget.lerp(this.target, t);
 
-    this.currentDistance = THREE.MathUtils.lerp(
-        this.currentDistance,
-        this.targetDistance,
-        t
-    );
+    this.currentDistance = THREE.MathUtils.lerp(this.currentDistance, this.targetDistance, t);
 
     const direction = this.currentTarget.clone().normalize();
     const position = direction.multiplyScalar(this.currentDistance);

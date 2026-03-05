@@ -1,59 +1,55 @@
 export class InteractionCoordinator {
-    private pendingIso: string | null = null;
-    private pendingTime = 0;
+  private pendingIso: string | null = null;
+  private pendingTime = 0;
 
-    private focusedIso: string | null = null;
-    private selectedIso: string | null = null;
-    private currentIso: string | null = null;
-    
-    private readonly focusDelayMs = 100;
-    private readonly nullDelayMs = 200;
+  private focusedIso: string | null = null;
+  private selectedIso: string | null = null;
+  private currentIso: string | null = null;
 
-    
-    constructor (
-        private highlight: (iso: string | null) => void,
-    ) {}
+  private readonly focusDelayMs = 200;
+  private readonly nullDelayMs = 300;
 
-    setFocused(iso: string | null): void {
-        const now = performance.now();
+  constructor(private highlight: (iso: string | null) => void) {}
 
-        if (iso !== this.pendingIso) {
-            this.pendingIso = iso;
-            this.pendingTime = now;
-            return;
-        }
+  setFocused(iso: string | null): void {
+    const now = performance.now();
 
-        const delay = iso === null ? this.nullDelayMs : this.focusDelayMs;
-        if (now - this.pendingTime < delay) return;
-
-        this.focusedIso = iso;
-        this.sync();
+    if (iso !== this.pendingIso) {
+      this.pendingIso = iso;
+      this.pendingTime = now;
+      return;
     }
 
-    setSelected(iso: string | null): void {
-        this.selectedIso = iso;
-        this.sync();
-    }
+    const delay = iso === null ? this.nullDelayMs : this.focusDelayMs;
+    if (now - this.pendingTime < delay) return;
 
-    clearSelected(): void {
-        this.selectedIso = null;
-        this.sync();
-    }
+    this.focusedIso = iso;
+    this.sync();
+  }
 
-    clearAll(): void {
-        this.selectedIso = null;
-        this.focusedIso = null;
-        this.pendingIso = null;
-        this.pendingTime = 0;
-        this.sync();
-    }
+  setSelected(iso: string | null): void {
+    this.selectedIso = iso;
+    this.sync();
+  }
 
-    private sync(): void {
-        const nextIso = this.selectedIso ?? this.focusedIso;
-        if (nextIso === this.currentIso) return;
+  clearSelected(): void {
+    this.selectedIso = null;
+    this.sync();
+  }
 
-        this.currentIso = nextIso;
-        this.highlight(nextIso);
-    }
+  clearAll(): void {
+    this.selectedIso = null;
+    this.focusedIso = null;
+    this.pendingIso = null;
+    this.pendingTime = 0;
+    this.sync();
+  }
 
+  private sync(): void {
+    const nextIso = this.selectedIso ?? this.focusedIso;
+    if (nextIso === this.currentIso) return;
+
+    this.currentIso = nextIso;
+    this.highlight(nextIso);
+  }
 }

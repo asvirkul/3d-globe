@@ -1,9 +1,8 @@
 import type { CountriesMap } from './types';
-import { pointInPolygon, pointInBBox} from './pointInPolygon';
-
+import { pointInPolygon, pointInBBox } from './pointInPolygon';
 
 function normalizeLon(lon: number): number {
-  return ((lon + 180) % 360 + 360) % 360 - 180;
+  return ((((lon + 180) % 360) + 360) % 360) - 180;
 }
 
 export function findCountryByLatLon(
@@ -17,7 +16,7 @@ export function findCountryByLatLon(
       continue;
     }
     const g = feature.geometry;
-    if (g.type === "Polygon") {
+    if (g.type === 'Polygon') {
       if (pointInPolygon(lat, normalizedLon, g.coordinates)) return iso;
     } else {
       for (const polygon of g.coordinates) {

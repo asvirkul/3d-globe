@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 export class GlobeWorld {
-
   public readonly root: THREE.Group;
 
   public readonly orbitGroup: THREE.Group;
@@ -11,7 +10,6 @@ export class GlobeWorld {
   public readonly effectsGroup: THREE.Group;
 
   constructor(earth: THREE.Object3D) {
-
     this.root = new THREE.Group();
     this.root.name = 'GlobeRoot';
 
@@ -21,18 +19,15 @@ export class GlobeWorld {
     this.earthGroup = new THREE.Group();
     this.earthGroup.name = 'EarthGroup';
 
-    
     this.effectsGroup = new THREE.Group();
     this.effectsGroup.name = 'EffectsGroup';
 
-
-    this.earthGroup.add(earth);           
-    this.orbitGroup.add(this.earthGroup); 
+    this.earthGroup.add(earth);
+    this.orbitGroup.add(this.earthGroup);
 
     this.root.add(this.orbitGroup);
     this.root.add(this.effectsGroup);
   }
-
 
   public addToEarth(object: THREE.Object3D) {
     this.earthGroup.add(object);
@@ -45,5 +40,4 @@ export class GlobeWorld {
   public addToEffects(object: THREE.Object3D) {
     this.effectsGroup.add(object);
   }
-
 }

@@ -1,14 +1,14 @@
-declare module "*.glsl" {
+declare module '*.glsl' {
   const value: string;
   export default value;
 }
 
-declare module "*.vs" {
+declare module '*.vs' {
   const value: string;
   export default value;
 }
 
-declare module "*.fs" {
+declare module '*.fs' {
   const value: string;
   export default value;
 }

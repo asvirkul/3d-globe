@@ -1,0 +1,9 @@
+dist
+node_modules
+public/assets/data/border.json
+index.html
+readme.md
+eslint.config.js
+.prettierrc
+src/style.css
+vite.config.ts

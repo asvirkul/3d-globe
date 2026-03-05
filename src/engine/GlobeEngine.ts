@@ -4,7 +4,7 @@ export interface Controller {
   update(delta: number): void;
   onResize?(width: number, height: number): void;
   dispose?(): void;
-} 
+}
 
 export class GlobeEngine {
   private lastTime = performance.now();
@@ -28,11 +28,10 @@ export class GlobeEngine {
 
     this.camera.aspect = width / height;
 
-    this.controllers.forEach(c => c.onResize?.(width, height));
+    this.controllers.forEach((c) => c.onResize?.(width, height));
 
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(width, height);
-
   };
 
   constructor(container: HTMLElement) {
@@ -47,11 +46,11 @@ export class GlobeEngine {
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
-      alpha: true
+      alpha: true,
     });
 
     this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -66,8 +65,7 @@ export class GlobeEngine {
     });
 
     this.resizeObserver.observe(this.container);
-    this.resize(); 
-    
+    this.resize();
   }
 
   private setupLighting(): void {
@@ -89,8 +87,6 @@ export class GlobeEngine {
     this.controllers.push(controller);
   }
 
-  
-
   public start(): void {
     if (this.rafId === null) {
       this.lastTime = performance.now();
@@ -106,8 +102,8 @@ export class GlobeEngine {
   }
 
   public warmup(): void {
-     this.renderer.compile(this.scene, this.camera);
-     this.renderer.render(this.scene, this.camera);
+    this.renderer.compile(this.scene, this.camera);
+    this.renderer.render(this.scene, this.camera);
   }
 
   public add(object: THREE.Object3D): void {
@@ -153,9 +149,7 @@ export class GlobeEngine {
     this.renderer.forceContextLoss();
 
     if (this.renderer.domElement.parentNode) {
-      this.renderer.domElement.parentNode.removeChild(
-        this.renderer.domElement
-      );
+      this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
     }
   }
 
@@ -167,7 +161,6 @@ export class GlobeEngine {
     return this.renderer;
   }
 
-
   public getScene(): THREE.Scene {
     return this.scene;
   }
@@ -177,12 +170,9 @@ export class GlobeEngine {
     const rawDelta = (now - this.lastTime) / 16.666;
     const delta = Math.min(rawDelta, 2);
     this.lastTime = now;
-    this.controllers.forEach(c => c.update(delta));
-
+    this.controllers.forEach((c) => c.update(delta));
 
     this.renderer.render(this.scene, this.camera);
     this.rafId = requestAnimationFrame(this.render);
   };
-  
 }
-  

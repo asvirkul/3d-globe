@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Controller } from "../GlobeEngine";
+import type { Controller } from '../GlobeEngine';
 import { CameraController } from './CameraController';
 
 export class OrbitController implements Controller {
@@ -19,8 +19,6 @@ export class OrbitController implements Controller {
   public onStartDrag?: () => void;
   public onEndDrag?: () => void;
 
-  
-
   constructor(
     cameraController: CameraController,
     dom: HTMLElement,
@@ -39,9 +37,8 @@ export class OrbitController implements Controller {
     dom.addEventListener('pointerleave', this.onUp, { signal: this.abort.signal });
     dom.addEventListener('wheel', this.onWheel, { passive: false, signal: this.abort.signal });
   }
-  
-  private onDown = (e: PointerEvent): void => {
 
+  private onDown = (e: PointerEvent): void => {
     const rect = this.dom.getBoundingClientRect();
     this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -49,26 +46,25 @@ export class OrbitController implements Controller {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     if (this.pointers.size === 0) {
-        const intersects = this.raycaster.intersectObject(this.globe);
-        if (intersects.length === 0) return;
-        this.isDraggingGlobe = true;
+      const intersects = this.raycaster.intersectObject(this.globe);
+      if (intersects.length === 0) return;
+      this.isDraggingGlobe = true;
     }
     this.pointers.set(e.pointerId, e);
     this.dom.setPointerCapture(e.pointerId);
 
     if (this.pointers.size === 1) {
-        this.lastRotate.x = e.clientX;
-        this.lastRotate.y = e.clientY;
-        this.onStartDrag?.();
+      this.lastRotate.x = e.clientX;
+      this.lastRotate.y = e.clientY;
+      this.onStartDrag?.();
     }
 
     if (this.pointers.size === 2) {
-        this.lastPinchDistance = this.getPinchDistance();
+      this.lastPinchDistance = this.getPinchDistance();
     }
   };
 
   private onMove = (e: PointerEvent): void => {
-    
     if (!this.pointers.has(e.pointerId)) return;
     if (!this.isDraggingGlobe) return;
 
@@ -77,41 +73,34 @@ export class OrbitController implements Controller {
     const count = this.pointers.size;
 
     if (count === 1) {
-        const dx = e.clientX - this.lastRotate.x;
-        const dy = e.clientY - this.lastRotate.y;
+      const dx = e.clientX - this.lastRotate.x;
+      const dy = e.clientY - this.lastRotate.y;
 
-        this.lastRotate.x = e.clientX;
-        this.lastRotate.y = e.clientY;
+      this.lastRotate.x = e.clientX;
+      this.lastRotate.y = e.clientY;
 
-        
-        const baseFov = this.cameraController.getBaseFov();
-        const fovFactor = this.camera.fov / baseFov;
-        const degreesPerPixel = 0.15;
-        const lonDelta = dx * degreesPerPixel * this.sensitivity * fovFactor;
-        const latDelta = dy * degreesPerPixel * this.sensitivity * fovFactor;
-        
-        this.cameraController.addLatLon(
-            -latDelta,
-            -lonDelta
-        );
+      const baseFov = this.cameraController.getBaseFov();
+      const fovFactor = this.camera.fov / baseFov;
+      const degreesPerPixel = 0.15;
+      const lonDelta = dx * degreesPerPixel * this.sensitivity * fovFactor;
+      const latDelta = dy * degreesPerPixel * this.sensitivity * fovFactor;
+
+      this.cameraController.addLatLon(-latDelta, -lonDelta);
     }
 
     if (count === 2) {
-        const distance = this.getPinchDistance();
+      const distance = this.getPinchDistance();
 
-        if (this.lastPinchDistance !== null) {
-            const delta = distance - this.lastPinchDistance;
-            const camDistance = this.cameraController.getDistance();
+      if (this.lastPinchDistance !== null) {
+        const delta = distance - this.lastPinchDistance;
+        const camDistance = this.cameraController.getDistance();
 
-            this.cameraController.addDistance(
-                -delta * this.zoomSpeed * 0.04 * camDistance
-            );
-        }
+        this.cameraController.addDistance(-delta * this.zoomSpeed * 0.04 * camDistance);
+      }
 
-        this.lastPinchDistance = distance;
+      this.lastPinchDistance = distance;
     }
   };
-
 
   private onUp = (e: PointerEvent): void => {
     if (!this.pointers.has(e.pointerId)) return;
@@ -120,20 +109,19 @@ export class OrbitController implements Controller {
     this.dom.releasePointerCapture(e.pointerId);
 
     if (this.pointers.size < 2) {
-        this.lastPinchDistance = null;
+      this.lastPinchDistance = null;
     }
 
     if (this.pointers.size === 0) {
-        this.onEndDrag?.();
+      this.onEndDrag?.();
     }
 
     if (this.pointers.size === 1) {
-        const remaining = Array.from(this.pointers.values())[0];
-        this.lastRotate.x = remaining.clientX;
-        this.lastRotate.y = remaining.clientY;
+      const remaining = Array.from(this.pointers.values())[0];
+      this.lastRotate.x = remaining.clientX;
+      this.lastRotate.y = remaining.clientY;
     }
   };
-
 
   private onWheel = (e: WheelEvent) => {
     e.preventDefault();

@@ -9,42 +9,32 @@ export type CloudsOptions = {
   scale?: number;
 };
 
-export function createClouds( renderer: THREE.WebGLRenderer, options: CloudsOptions): THREE.Mesh {
-  const {
-    radius,
-    texture,
-    opacity = 0.85,
-    scale = 1.01,
-  } = options;
+export function createClouds(renderer: THREE.WebGLRenderer, options: CloudsOptions): THREE.Mesh {
+  const { radius, texture, opacity = 0.85, scale = 1.01 } = options;
 
-  const geometry = new THREE.SphereGeometry(
-    radius * scale,
-    64,
-    64
-  );
+  const geometry = new THREE.SphereGeometry(radius * scale, 64, 64);
 
   const map = texture;
-  
+
   map.colorSpace = THREE.SRGBColorSpace;
   map.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
-    const material = new THREE.ShaderMaterial({
+  const material = new THREE.ShaderMaterial({
     uniforms: {
-        cloudMap: { value: map },
-        density: { value: 0.5 },
-        opacity: { value: opacity },
-        haze: { value: 1 }   
+      cloudMap: { value: map },
+      density: { value: 0.5 },
+      opacity: { value: opacity },
+      haze: { value: 1 },
     },
     vertexShader,
     fragmentShader,
     transparent: true,
     depthWrite: false,
-    });
+  });
 
   const mesh = new THREE.Mesh(geometry, material);
   return mesh;
 }
-
 
 export type CloudLayersOptions = {
   radius: number;
@@ -57,17 +47,12 @@ export function createCloudLayers(
   renderer: THREE.WebGLRenderer,
   options: CloudLayersOptions
 ): THREE.Group {
-  const {
-    radius,
-    texture,
-    baseOpacity = 0.85,
-    overcastOpacity = 0.65,
-  } = options;
+  const { radius, texture, baseOpacity = 0.85, overcastOpacity = 0.65 } = options;
 
   const group = new THREE.Group();
   group.name = 'CloudLayers';
 
-  const base = createClouds(renderer,{
+  const base = createClouds(renderer, {
     radius,
     texture,
     opacity: baseOpacity,
@@ -77,12 +62,12 @@ export function createCloudLayers(
   base.name = 'CloudsBase';
   base.renderOrder = 10;
 
-    const overcast = createClouds(renderer, {
+  const overcast = createClouds(renderer, {
     radius,
     texture,
     opacity: overcastOpacity,
     scale: 1.013,
-    });
+  });
 
   overcast.name = 'CloudsOvercast';
   overcast.rotation.y = Math.PI / 4;

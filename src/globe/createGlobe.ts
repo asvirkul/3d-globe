@@ -1,5 +1,5 @@
 import type { GlobeData } from './loadGlobeData';
-import type { GlobeAPI, CreateGlobeOptions } from "./types";
+import type { GlobeAPI, CreateGlobeOptions } from './types';
 import { GlobeEngine } from '../engine/GlobeEngine';
 import { GlobeWorld } from '../engine/world/GlobeWorld';
 import { createEarth } from '../engine/objects/Earth';
@@ -13,13 +13,13 @@ import { StarsController } from '../engine/controllers/StarsController';
 import { computeStarsRadius } from '../engine/utils/stars';
 import { createLights } from '../engine/objects/Lights';
 import { LightController } from '../engine/controllers/LightController';
-import { createCountryBordersLayer } from "./borders/countryBorderLayer";
+import { createCountryBordersLayer } from './borders/countryBorderLayer';
 import { CountryPickController } from './interactions/countryPickController';
 import { CountryFocusController } from './interactions/countryFocusController';
 import { InteractionCoordinator } from './interactions/interactionCoordinator';
 
 export function createGlobe(
-  container: HTMLElement, 
+  container: HTMLElement,
   data: GlobeData,
   options: CreateGlobeOptions = {}
 ): GlobeAPI {
@@ -29,7 +29,6 @@ export function createGlobe(
   const renderer = engine.getRenderer();
   const camera = engine.getCamera();
   const { assets, countries } = data;
-
 
   const earth = createEarth({
     radius: EARTH_RADIUS,
@@ -62,7 +61,7 @@ export function createGlobe(
   );
 
   orbit.onStartDrag = () => earthController.pauseAutoRotate();
-  orbit.onEndDrag   = () => earthController.resumeAutoRotate();
+  orbit.onEndDrag = () => earthController.resumeAutoRotate();
 
   engine.addController(orbit);
 
@@ -73,10 +72,7 @@ export function createGlobe(
 
   world.addToEarth(clouds);
 
-  const cloudController = new CloudController(
-    cameraController,
-    clouds
-  );
+  const cloudController = new CloudController(cameraController, clouds);
   engine.addController(cloudController);
 
   const stars = createStars({
@@ -87,11 +83,7 @@ export function createGlobe(
 
   engine.add(stars);
 
-  const starsController = new StarsController(
-    stars,
-    camera,
-    cameraController
-  );
+  const starsController = new StarsController(stars, camera, cameraController);
   engine.addController(starsController);
 
   const lights = createLights(renderer, {
@@ -101,11 +93,7 @@ export function createGlobe(
 
   world.addToEarth(lights.mesh);
 
-  const bordersLayer = createCountryBordersLayer(
-    world.earthGroup,
-    countries,
-    EARTH_RADIUS
-  );
+  const bordersLayer = createCountryBordersLayer(world.earthGroup, countries, EARTH_RADIUS);
 
   const lightController = new LightController(lights.material);
   engine.addController(lightController);
@@ -129,17 +117,12 @@ export function createGlobe(
     }
   );
 
-  const focusController = new CountryFocusController(
-    earth.mesh,
-    camera,
-    countries,
-    {
-      canInteract: canCountryInteract,
-      onFocus: (iso) => {
-        interactionCoordinator.setFocused(iso);
-      }
-    }
-  );
+  const focusController = new CountryFocusController(earth.mesh, camera, countries, {
+    canInteract: canCountryInteract,
+    onFocus: (iso) => {
+      interactionCoordinator.setFocused(iso);
+    },
+  });
 
   engine.addController(pickController);
   engine.addController(focusController);
@@ -151,11 +134,9 @@ export function createGlobe(
     stop: engine.stop.bind(engine),
     destroy: engine.destroy.bind(engine),
     setAutoRotate: (enabled) =>
-        enabled
-        ? earthController.resumeAutoRotate()
-        : earthController.pauseAutoRotate(),
+      enabled ? earthController.resumeAutoRotate() : earthController.pauseAutoRotate(),
     flyToLatLon: cameraController.flyToLatLon.bind(cameraController),
-    highlightCountry: bordersLayer.highlight
+    highlightCountry: bordersLayer.highlight,
   };
   return api;
 }

@@ -25,12 +25,8 @@ export function createEarth(options: EarthOptions = {}): EarthObject {
   const group = new THREE.Group();
   group.name = 'EarthGroup';
 
-  const geometry = new THREE.SphereGeometry(
-    radius,
-    widthSegments,
-    heightSegments
-  );
-  
+  const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+
   const material = new THREE.MeshStandardMaterial({
     map: texture,
   });
@@ -70,10 +66,7 @@ export function createEarth(options: EarthOptions = {}): EarthObject {
       `,
     });
 
-    const atmosphereMesh = new THREE.Mesh(
-      atmosphereGeometry,
-      atmosphereMaterial
-    );
+    const atmosphereMesh = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
 
     atmosphereMesh.name = 'Atmosphere';
     group.add(atmosphereMesh);

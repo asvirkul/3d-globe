@@ -9,12 +9,8 @@ export type GlobeData = {
   countries: CountriesMap;
 };
 
-
 export async function loadGlobeData(): Promise<Result<GlobeData>> {
-  const [assets, countries] = await Promise.all([
-    loadGlobeAssets(),
-    loadCountries(),
-  ]);
+  const [assets, countries] = await Promise.all([loadGlobeAssets(), loadCountries()]);
 
   if (!assets.ok) {
     return { ok: false, error: assets.error };
@@ -29,6 +25,6 @@ export async function loadGlobeData(): Promise<Result<GlobeData>> {
     value: {
       assets: assets.value,
       countries: countries.value,
-    }
+    },
   };
 }

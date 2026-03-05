@@ -5,25 +5,24 @@ export type MultiPolygonCoordinates = PolygonCoordinates[];
 export type BBox = readonly [minLon: number, minLat: number, maxLon: number, maxLat: number];
 
 export type PolygonGeometry = {
-  type: "Polygon";
+  type: 'Polygon';
   coordinates: PolygonCoordinates;
 };
 
-
 export type MultiPolygonGeometry = {
-  type: "MultiPolygon";
+  type: 'MultiPolygon';
   coordinates: MultiPolygonCoordinates;
 };
 
 export type CountryGeometry = PolygonGeometry | MultiPolygonGeometry;
 
 export type CountryFeature = {
-  type: "Feature";
+  type: 'Feature';
   properties: {
     iso_a2: string;
   };
   geometry: CountryGeometry;
-  bbox?: BBox; 
+  bbox?: BBox;
 };
 
 export type CountriesMap = Map<string, CountryFeature>;

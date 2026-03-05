@@ -1,5 +1,5 @@
-import { CameraController } from "./CameraController";
-import type { Controller } from "../GlobeEngine";
+import { CameraController } from './CameraController';
+import type { Controller } from '../GlobeEngine';
 
 export type EarthControllerOptions = {
   autoRotate?: boolean;
@@ -12,13 +12,10 @@ export class EarthController implements Controller {
   private rotateSpeed: number;
   private initialAutoRotate: boolean;
 
-  constructor(
-    cameraController: CameraController,
-    options: EarthControllerOptions = {}
-  ) {
+  constructor(cameraController: CameraController, options: EarthControllerOptions = {}) {
     this.cameraController = cameraController;
 
-    this.initialAutoRotate = options.autoRotate ?? true; 
+    this.initialAutoRotate = options.autoRotate ?? true;
     this.autoRotate = this.initialAutoRotate;
 
     this.rotateSpeed = options.rotateSpeed ?? 0.001;

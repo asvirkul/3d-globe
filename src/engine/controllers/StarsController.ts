@@ -3,7 +3,6 @@ import type { Controller } from '../GlobeEngine';
 import { CameraController } from './CameraController';
 
 export class StarsController implements Controller {
-
   private time = 0;
 
   constructor(
@@ -13,7 +12,6 @@ export class StarsController implements Controller {
   ) {}
 
   update(delta: number): void {
-
     this.stars.position.copy(this.camera.position);
 
     const zoom = this.cameraController.getZoomNormalized();
