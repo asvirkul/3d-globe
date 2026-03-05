@@ -40,7 +40,7 @@ export class OrbitController implements Controller {
     dom.addEventListener('wheel', this.onWheel, { passive: false, signal: this.abort.signal });
   }
   
-  private onDown = (e: PointerEvent) => {
+  private onDown = (e: PointerEvent): void => {
 
     const rect = this.dom.getBoundingClientRect();
     this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -67,7 +67,7 @@ export class OrbitController implements Controller {
     }
   };
 
-  private onMove = (e: PointerEvent) => {
+  private onMove = (e: PointerEvent): void => {
     
     if (!this.pointers.has(e.pointerId)) return;
     if (!this.isDraggingGlobe) return;
@@ -113,7 +113,7 @@ export class OrbitController implements Controller {
   };
 
 
-  private onUp = (e: PointerEvent) => {
+  private onUp = (e: PointerEvent): void => {
     if (!this.pointers.has(e.pointerId)) return;
 
     this.pointers.delete(e.pointerId);

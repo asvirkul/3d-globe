@@ -11,12 +11,7 @@ async function init() {
     return;
   }
 
-  const globe = createGlobe(container, globeData.value, {
-   onCountryPick: (iso) => {
-      if (!iso) return;
-      console.log('Selected ISO:', iso)
-    },
-  } );
+  const globe = createGlobe(container, globeData.value );
 
   globe.start();
 }

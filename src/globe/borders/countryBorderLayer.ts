@@ -22,7 +22,7 @@ export function createCountryBordersLayer(
         current = null;
     }
 
-  function highlight(iso: string | null) {
+  function highlight(iso: string | null): void {
     clear();
     if (!iso) return;
     const feature = countries.get(iso.toUpperCase());

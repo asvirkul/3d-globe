@@ -79,7 +79,7 @@ export class CameraController implements Controller {
     return (radius / Math.sin(limitingHalfFov)) * padding;
   }
 
-  private recomputeDistanceLimits() {
+  private recomputeDistanceLimits(): void {
     const baseMin = this.defMinDistance;
     const baseMax = this.defMaxDistance;
 
@@ -117,21 +117,21 @@ export class CameraController implements Controller {
     return this.baseFov;
   }
 
-  public lookAtLatLon(lat: number, lon: number) {
+  public lookAtLatLon(lat: number, lon: number): void {
     this.setLatLon(lat, lon);
     this.currentTarget.copy(this.target);
   }
 
-  public flyToLatLon(lat: number, lon: number, distance?: number) {
+  public flyToLatLon(lat: number, lon: number, distance?: number): void {
     this.setLatLon(lat, lon);
     this.setDistance(distance ?? this.minDistance);
   }
 
-  public addLatLon(dLat: number, dLon: number = 0) {
+  public addLatLon(dLat: number, dLon: number = 0): void {
     this.setLatLon(this.lat - dLat, this.lon + dLon);
   }
   
-  public addDistance(delta: number) {
+  public addDistance(delta: number): void {
     this.targetDistance += delta;
 
     this.targetDistance = THREE.MathUtils.clamp(
@@ -141,7 +141,7 @@ export class CameraController implements Controller {
     );
     }
 
-  public setDistance(distance: number) {
+  public setDistance(distance: number): void {
     this.targetDistance = THREE.MathUtils.clamp(
         distance,
         this.minDistance,
@@ -160,7 +160,7 @@ export class CameraController implements Controller {
   }
 
 
-  private setLatLon(lat: number, lon: number) {
+  private setLatLon(lat: number, lon: number): void {
     this.lat = THREE.MathUtils.clamp(lat, this.minLat, this.maxLat);
     this.lon = lon;
 

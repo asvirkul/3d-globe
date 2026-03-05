@@ -24,17 +24,17 @@ export class EarthController implements Controller {
     this.rotateSpeed = options.rotateSpeed ?? 0.001;
   }
 
-  public pauseAutoRotate() {
+  public pauseAutoRotate(): void {
     this.autoRotate = false;
   }
 
-  public resumeAutoRotate() {
+  public resumeAutoRotate(): void {
     if (this.initialAutoRotate) {
       this.autoRotate = true;
     }
   }
 
-  public setRotateSpeed(speed: number) {
+  public setRotateSpeed(speed: number): void {
     this.rotateSpeed = speed;
   }
 

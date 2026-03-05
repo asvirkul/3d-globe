@@ -19,7 +19,8 @@
 
     "baseUrl": "./src",
     "paths": {
-      "@engine/*": ["engine/*"]
+      "@engine/*": ["engine/*"],
+      "@globe/*": ["globe/*"]
     },
 
     "noEmit": true

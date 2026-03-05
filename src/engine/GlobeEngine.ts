@@ -17,7 +17,7 @@ export class GlobeEngine {
   private lastWidth = 0;
   private lastHeight = 0;
 
-  private resize = () => {
+  private resize = (): void => {
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
     if (!width || !height) return;
@@ -70,7 +70,7 @@ export class GlobeEngine {
     
   }
 
-  private setupLighting() {
+  private setupLighting(): void {
     const key = new THREE.DirectionalLight(0xffffff, 1.6);
     key.position.set(6, 4, 6);
     this.scene.add(key);
@@ -85,40 +85,40 @@ export class GlobeEngine {
 
   private controllers: Controller[] = [];
 
-  public addController(controller: Controller) {
+  public addController(controller: Controller): void {
     this.controllers.push(controller);
   }
 
   
 
-  public start() {
+  public start(): void {
     if (this.rafId === null) {
       this.lastTime = performance.now();
       this.render();
     }
   }
 
-  public stop() {
+  public stop(): void {
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
     }
   }
 
-  public warmup() {
+  public warmup(): void {
      this.renderer.compile(this.scene, this.camera);
      this.renderer.render(this.scene, this.camera);
   }
 
-  public add(object: THREE.Object3D) {
+  public add(object: THREE.Object3D): void {
     this.scene.add(object);
   }
 
-  public remove(object: THREE.Object3D) {
+  public remove(object: THREE.Object3D): void {
     this.scene.remove(object);
   }
 
-  public destroy() {
+  public destroy(): void {
     this.stop();
     this.resizeObserver?.disconnect();
     for (const c of this.controllers) {
@@ -172,7 +172,7 @@ export class GlobeEngine {
     return this.scene;
   }
 
-  private render = () => {
+  private render = (): void => {
     const now = performance.now();
     const rawDelta = (now - this.lastTime) / 16.666;
     const delta = Math.min(rawDelta, 2);

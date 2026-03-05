@@ -95,7 +95,7 @@ export function createGlobe(
   engine.addController(starsController);
 
   const lights = createLights(renderer, {
-    radius: EARTH_RADIUS + 0.5,
+    radius: EARTH_RADIUS + 0.2,
     texture: assets.lights,
   });
 

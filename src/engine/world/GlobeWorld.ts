@@ -21,7 +21,7 @@ export class GlobeWorld {
     this.earthGroup = new THREE.Group();
     this.earthGroup.name = 'EarthGroup';
 
-
+    
     this.effectsGroup = new THREE.Group();
     this.effectsGroup.name = 'EffectsGroup';
 
