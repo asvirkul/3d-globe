@@ -17,6 +17,8 @@ import { createCountryBordersLayer } from './borders/countryBorderLayer';
 import { CountryPickController } from './interactions/countryPickController';
 import { CountryFocusController } from './interactions/countryFocusController';
 import { InteractionCoordinator } from './interactions/interactionCoordinator';
+import { CountryLabelsController } from './labels/countryLabelsController';
+import { CountryLabelsLayer } from './labels/countryLabelsLayer';
 
 export function createGlobe(
   container: HTMLElement,
@@ -42,7 +44,7 @@ export function createGlobe(
     radius: EARTH_RADIUS,
     distance: EARTH_RADIUS * 3,
     damping: 0.09,
-    minDistance: EARTH_RADIUS * 1.3,
+    minDistance: EARTH_RADIUS * 1.2,
     maxDistance: EARTH_RADIUS * 3,
   });
   engine.addController(cameraController);
@@ -87,7 +89,7 @@ export function createGlobe(
   engine.addController(starsController);
 
   const lights = createLights(renderer, {
-    radius: EARTH_RADIUS + 0.2,
+    radius: EARTH_RADIUS + 0.4,
     texture: assets.lights,
   });
 
@@ -126,6 +128,21 @@ export function createGlobe(
 
   engine.addController(pickController);
   engine.addController(focusController);
+
+  const labelsLayer = new CountryLabelsLayer(countries, camera, EARTH_RADIUS, {
+    getZoomNormalized: () => cameraController.getZoomNormalized(),
+    container,
+    farMinImportance: 0.9,
+    nearMinImportance: 0.55,
+    horizonHysteresis: 0.01,
+    importanceHysteresis: 0.03,
+    horizonMargin: 0.02,
+    maxHorizonDot: 0.9,
+    filters: [],
+  });
+
+  world.addToEarth(labelsLayer.object3d);
+  engine.addController(new CountryLabelsController(labelsLayer));
 
   engine.warmup();
 

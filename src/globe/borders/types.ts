@@ -20,6 +20,11 @@ export type CountryFeature = {
   type: 'Feature';
   properties: {
     iso_a2: string;
+    name?: string;
+    area_km2?: number;
+    label_lon?: number;
+    label_lat?: number;
+    importance_override?: number;
   };
   geometry: CountryGeometry;
   bbox?: BBox;

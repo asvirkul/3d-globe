@@ -55,8 +55,36 @@ export async function loadCountries(): Promise<Result<CountriesMap>> {
 
     for (const feature of geojson.features) {
       const props = feature?.properties ?? {};
+      const nameRaw = props.name ?? props.NAME ?? props.Name;
+      const areaRaw = props.area_km2 ?? props.AREA_KM2 ?? props.Area_Km2;
+      const labelLonRaw = props.label_lon ?? props.LABEL_LON ?? props.Label_Lon;
+      const labelLatRaw = props.label_lat ?? props.LABEL_LAT ?? props.Label_Lat;
+      const overrideRaw =
+        props.importance_override ?? props.IMPORTANCE_OVERRIDE ?? props.Importance_Override;
       const iso = props.ISO_A2 ?? props.iso_a2 ?? props.Iso_A2;
       const geometry = feature?.geometry;
+      const name =
+        typeof nameRaw === 'string' && nameRaw.trim().length > 0 ? nameRaw.trim() : undefined;
+      const areaNum = typeof areaRaw === 'number' ? areaRaw : Number(areaRaw);
+      const overrideNum = typeof overrideRaw === 'number' ? overrideRaw : Number(overrideRaw);
+      const area = Number.isFinite(areaNum) && areaNum > 0 ? areaNum : undefined;
+      const labelLon =
+        typeof labelLonRaw === 'number' &&
+        Number.isFinite(labelLonRaw) &&
+        labelLonRaw >= -180 &&
+        labelLonRaw <= 180
+          ? labelLonRaw
+          : undefined;
+      const labelLat =
+        typeof labelLatRaw === 'number' &&
+        Number.isFinite(labelLatRaw) &&
+        labelLatRaw >= -90 &&
+        labelLatRaw <= 90
+          ? labelLatRaw
+          : undefined;
+      const importanceOverride = Number.isFinite(overrideNum)
+        ? Math.min(1, Math.max(0, overrideNum))
+        : undefined;
 
       if (
         typeof iso !== 'string' ||
@@ -64,12 +92,23 @@ export async function loadCountries(): Promise<Result<CountriesMap>> {
         !(geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') ||
         !Array.isArray(geometry.coordinates)
       ) {
+        console.warn('[loadCountries] invalid feature', { iso });
         continue;
       }
 
-      countries.set(iso.toUpperCase(), {
+      const isoNorm = iso.trim().toUpperCase();
+      if (!isoNorm) continue;
+
+      countries.set(isoNorm, {
         type: 'Feature',
-        properties: { iso_a2: iso },
+        properties: {
+          iso_a2: isoNorm,
+          name: name,
+          area_km2: area,
+          label_lat: labelLat,
+          label_lon: labelLon,
+          importance_override: importanceOverride,
+        },
         geometry,
         bbox: computeBB(geometry),
       });
