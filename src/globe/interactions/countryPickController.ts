@@ -7,6 +7,7 @@ import { findCountryByLatLon } from '../borders/countryLookup';
 type CountryPickHandlers = {
   onPick?: (iso: string | null) => void;
   canInteract?: () => boolean;
+  getFocusedIso?: () => string | null;
 };
 
 export class CountryPickController implements Controller {
@@ -17,7 +18,6 @@ export class CountryPickController implements Controller {
   private downY = 0;
   private readonly tapThreshold = 6;
   private isPointerDown = false;
-
   constructor(
     private dom: HTMLElement,
     private earthMesh: THREE.Mesh,
@@ -57,7 +57,9 @@ export class CountryPickController implements Controller {
 
     if (this.handlers.canInteract?.() === false) return;
     if (moved >= this.tapThreshold) return;
+    const focusedIso = this.handlers.getFocusedIso?.();
     const iso = this.pickIso(e.clientX, e.clientY);
+    if (focusedIso !== undefined && focusedIso !== null && iso !== focusedIso) return;
     this.handlers.onPick?.(iso);
   };
 

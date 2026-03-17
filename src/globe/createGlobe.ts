@@ -113,10 +113,10 @@ export function createGlobe(
     countries,
     {
       onPick: (iso) => {
-        interactionCoordinator.setSelected(iso);
         options.onCountryPick?.(iso);
       },
       canInteract: canCountryInteract,
+      getFocusedIso: () => interactionCoordinator.getFocusedIso(),
     }
   );
 

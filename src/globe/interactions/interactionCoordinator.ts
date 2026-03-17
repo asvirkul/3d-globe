@@ -1,17 +1,14 @@
 export class InteractionCoordinator {
   private pendingIso: string | null = null;
   private pendingTime = 0;
-
   private focusedIso: string | null = null;
-  private selectedIso: string | null = null;
-  private currentIso: string | null = null;
 
   private readonly focusDelayMs = 200;
   private readonly nullDelayMs = 300;
 
   constructor(private highlight: (iso: string | null) => void) {}
 
-  setFocused(iso: string | null): void {
+  public setFocused(iso: string | null): void {
     const now = performance.now();
 
     if (iso !== this.pendingIso) {
@@ -22,34 +19,22 @@ export class InteractionCoordinator {
 
     const delay = iso === null ? this.nullDelayMs : this.focusDelayMs;
     if (now - this.pendingTime < delay) return;
+    if (iso === this.focusedIso) return;
 
     this.focusedIso = iso;
-    this.sync();
+    this.highlight(iso);
   }
 
-  setSelected(iso: string | null): void {
-    this.selectedIso = iso;
-    this.sync();
+  public getFocusedIso(): string | null {
+    return this.focusedIso;
   }
 
-  clearSelected(): void {
-    this.selectedIso = null;
-    this.sync();
-  }
-
-  clearAll(): void {
-    this.selectedIso = null;
-    this.focusedIso = null;
+  public clear(): void {
     this.pendingIso = null;
     this.pendingTime = 0;
-    this.sync();
-  }
 
-  private sync(): void {
-    const nextIso = this.selectedIso ?? this.focusedIso;
-    if (nextIso === this.currentIso) return;
-
-    this.currentIso = nextIso;
-    this.highlight(nextIso);
+    if (this.focusedIso === null) return;
+    this.focusedIso = null;
+    this.highlight(null);
   }
 }
