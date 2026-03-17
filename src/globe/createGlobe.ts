@@ -19,6 +19,7 @@ import { CountryFocusController } from './interactions/countryFocusController';
 import { InteractionCoordinator } from './interactions/interactionCoordinator';
 import { CountryLabelsController } from './labels/countryLabelsController';
 import { CountryLabelsLayer } from './labels/countryLabelsLayer';
+import { LABELS_CONFIG } from './labels/config';
 
 export function createGlobe(
   container: HTMLElement,
@@ -130,14 +131,9 @@ export function createGlobe(
   engine.addController(focusController);
 
   const labelsLayer = new CountryLabelsLayer(countries, camera, EARTH_RADIUS, {
+    ...LABELS_CONFIG,
     getZoomNormalized: () => cameraController.getZoomNormalized(),
     container,
-    farMinImportance: 0.9,
-    nearMinImportance: 0.55,
-    horizonHysteresis: 0.01,
-    importanceHysteresis: 0.03,
-    horizonMargin: 0.02,
-    maxHorizonDot: 0.9,
     filters: [],
   });
 
