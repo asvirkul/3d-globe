@@ -11,7 +11,7 @@ import type {
 import { buildAreaScale, getLabelSizePx, resolveImportance } from './areaScale';
 import { createCountryText } from './troikaText';
 import { lon2xyz } from '../../engine/utils/geo';
-import { dampColor, isColorNear } from './labelStyle';
+import { dampColor, isColorNear, isTargetNear } from './labelStyle';
 import { isValidArea, isValidCoord } from './geo';
 
 function getBlockBounds(label: TroikaTextRenderInfo): BlockBounds | null {
@@ -49,6 +49,7 @@ export class CountryLabelsLayer {
   private readonly _acceptedBuffer: LabelEntry[] = [];
   private readonly _tempRectsBuffer: ScreenRect[] = [];
   private readonly _colorAnimatingBuffer: LabelEntry[] = [];
+  private readonly _opacityBuffer: LabelEntry[] = [];
   private readonly labelsByIso = new Map<string, LabelEntry>();
   private focusedIso: string | null = null;
   private static readonly FADE_SPEED = 4;
@@ -104,7 +105,7 @@ export class CountryLabelsLayer {
       };
 
       this.labels.push(entry);
-      this.labelsByIso.set(country.properties.iso_a2, entry); 
+      this.labelsByIso.set(country.properties.iso_a2, entry);
     }
     this.labels.sort((a, b) => b.importance - a.importance);
   }
@@ -238,29 +239,34 @@ export class CountryLabelsLayer {
   public updateOpacity(delta: number): void {
     const deltaSec = delta / 60;
     const k = 1 - Math.exp(-CountryLabelsLayer.FADE_SPEED * deltaSec);
-    for (const entry of this.labels) {
-      const prev = entry.opacity;
-      entry.opacity = THREE.MathUtils.lerp(prev, entry.targetOpacity, k);
+    for (let i = this._opacityBuffer.length - 1; i >= 0; i--) {
+      const entry = this._opacityBuffer[i];
+      entry.opacity = THREE.MathUtils.lerp(entry.opacity, entry.targetOpacity, k);
 
       const isOpacityVisible = entry.opacity > 0.01 || entry.targetOpacity > 0;
       entry.label.visible = isOpacityVisible;
       if (isOpacityVisible) {
         entry.label.fillOpacity = entry.opacity;
-        entry.label.strokeOpacity = entry.opacity;
         entry.label.outlineOpacity = entry.opacity;
+        entry.label.outlineOpacity = entry.opacity;
+      }
+
+      if (isTargetNear(entry.opacity, entry.targetOpacity)) {
+        entry.opacity = entry.targetOpacity;
+        this._opacityBuffer.splice(i, 1);
       }
     }
   }
 
   public updateColor(delta: number): void {
     const deltaSec = delta / 60;
-     
+
     for (let i = this._colorAnimatingBuffer.length - 1; i >= 0; i--) {
       const entry = this._colorAnimatingBuffer[i];
       dampColor(entry.color, entry.targetColor, 8, deltaSec);
       entry.label.color = `#${entry.color.getHexString()}`;
-      
-      if ( isColorNear(entry.color, entry.targetColor) ) {
+
+      if (isColorNear(entry.color, entry.targetColor)) {
         entry.color.copy(entry.targetColor);
         entry.label.color = `#${entry.color.getHexString()}`;
         this._colorAnimatingBuffer.splice(i, 1);
@@ -272,11 +278,24 @@ export class CountryLabelsLayer {
     if (!this._colorAnimatingBuffer.includes(entry)) {
       this._colorAnimatingBuffer.push(entry);
     }
-  } 
+  }
 
-  public setFocusedIso(nextIso: string | null): void  {
-    if (this.focusedIso === nextIso) return; 
-    
+  private setTargetOpacity(entry: LabelEntry, target: number): void {
+    if (entry.targetOpacity === target) return;
+
+    entry.targetOpacity = target;
+    this.enqueueOpacityAnimation(entry);
+  }
+
+  private enqueueOpacityAnimation(entry: LabelEntry): void {
+    if (!this._opacityBuffer.includes(entry)) {
+      this._opacityBuffer.push(entry);
+    }
+  }
+
+  public setFocusedIso(nextIso: string | null): void {
+    if (this.focusedIso === nextIso) return;
+
     if (this.focusedIso) {
       const prevLabel = this.labelsByIso.get(this.focusedIso);
 
@@ -286,7 +305,7 @@ export class CountryLabelsLayer {
       }
     }
 
-    this.focusedIso = nextIso; 
+    this.focusedIso = nextIso;
 
     if (nextIso) {
       const nextEntry = this.labelsByIso.get(nextIso);
@@ -369,12 +388,12 @@ export class CountryLabelsLayer {
 
     for (const entry of this.labels) {
       entry.wasAccepted = false;
-      entry.targetOpacity = 0;
+      this.setTargetOpacity(entry, 0);
     }
 
     for (let i = 0; i < limit; i++) {
       accepted[i].wasAccepted = true;
-      accepted[i].targetOpacity = 1;
+      this.setTargetOpacity(accepted[i], 1);
     }
   }
 

@@ -18,6 +18,8 @@ declare module 'troika-three-text' {
     outlineWidth?: number | string;
     outlineOpacity?: number;
     outlineBlur?: number;
+    fillOpacity: number;
+    visible: boolean;
 
     material: Material | Material[];
 

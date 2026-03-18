@@ -33,6 +33,8 @@ export type LabelEntry = {
   wasAccepted: boolean;
   opacity: number;
   targetOpacity: number;
+  color: THREE.Color;
+  targetColor: THREE.Color;
 };
 
 export type LabelsFrameState = {

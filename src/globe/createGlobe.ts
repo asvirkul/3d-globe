@@ -20,7 +20,6 @@ import { InteractionCoordinator } from './interactions/interactionCoordinator';
 import { CountryLabelsController } from './labels/countryLabelsController';
 import { CountryLabelsLayer } from './labels/countryLabelsLayer';
 import { LABELS_CONFIG } from './labels/config';
-import { label } from 'three/tsl';
 
 export function createGlobe(
   container: HTMLElement,
