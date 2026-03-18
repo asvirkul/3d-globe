@@ -11,6 +11,7 @@ import type {
 import { buildAreaScale, getLabelSizePx, resolveImportance } from './areaScale';
 import { createCountryText } from './troikaText';
 import { lon2xyz } from '../../engine/utils/geo';
+import { dampColor, isColorNear } from './labelStyle';
 import { isValidArea, isValidCoord } from './geo';
 
 function getBlockBounds(label: TroikaTextRenderInfo): BlockBounds | null {
@@ -47,7 +48,11 @@ export class CountryLabelsLayer {
   private readonly _freshBuffer: LabelEntry[] = [];
   private readonly _acceptedBuffer: LabelEntry[] = [];
   private readonly _tempRectsBuffer: ScreenRect[] = [];
+  private readonly _colorAnimatingBuffer: LabelEntry[] = [];
+  private readonly labelsByIso = new Map<string, LabelEntry>();
+  private focusedIso: string | null = null;
   private static readonly FADE_SPEED = 4;
+
   constructor(
     countries: CountriesMap,
     private camera: THREE.Camera,
@@ -86,14 +91,20 @@ export class CountryLabelsLayer {
 
       label.position.copy(pos);
       this.group.add(label);
-      this.labels.push({
+
+      const entry: LabelEntry = {
         label: label as TroikaTextRenderInfo,
         normal,
         importance,
         wasAccepted: false,
         opacity: 0,
         targetOpacity: 0,
-      });
+        color: new THREE.Color('#ffffff'),
+        targetColor: new THREE.Color('#ffffff'),
+      };
+
+      this.labels.push(entry);
+      this.labelsByIso.set(country.properties.iso_a2, entry); 
     }
     this.labels.sort((a, b) => b.importance - a.importance);
   }
@@ -237,6 +248,51 @@ export class CountryLabelsLayer {
         entry.label.fillOpacity = entry.opacity;
         entry.label.strokeOpacity = entry.opacity;
         entry.label.outlineOpacity = entry.opacity;
+      }
+    }
+  }
+
+  public updateColor(delta: number): void {
+    const deltaSec = delta / 60;
+     
+    for (let i = this._colorAnimatingBuffer.length - 1; i >= 0; i--) {
+      const entry = this._colorAnimatingBuffer[i];
+      dampColor(entry.color, entry.targetColor, 8, deltaSec);
+      entry.label.color = `#${entry.color.getHexString()}`;
+      
+      if ( isColorNear(entry.color, entry.targetColor) ) {
+        entry.color.copy(entry.targetColor);
+        entry.label.color = `#${entry.color.getHexString()}`;
+        this._colorAnimatingBuffer.splice(i, 1);
+      }
+    }
+  }
+
+  private enqueueColorAnimation(entry: LabelEntry): void {
+    if (!this._colorAnimatingBuffer.includes(entry)) {
+      this._colorAnimatingBuffer.push(entry);
+    }
+  } 
+
+  public setFocusedIso(nextIso: string | null): void  {
+    if (this.focusedIso === nextIso) return; 
+    
+    if (this.focusedIso) {
+      const prevLabel = this.labelsByIso.get(this.focusedIso);
+
+      if (prevLabel) {
+        prevLabel.targetColor.set('#ffffff');
+        this.enqueueColorAnimation(prevLabel);
+      }
+    }
+
+    this.focusedIso = nextIso; 
+
+    if (nextIso) {
+      const nextEntry = this.labelsByIso.get(nextIso);
+      if (nextEntry) {
+        nextEntry.targetColor.set('#da3429');
+        this.enqueueColorAnimation(nextEntry);
       }
     }
   }

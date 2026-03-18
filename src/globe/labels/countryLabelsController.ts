@@ -7,6 +7,7 @@ export class CountryLabelsController implements Controller {
   update(delta: number): void {
     this.layer.updateVisibility();
     this.layer.updateOpacity(delta);
+    this.layer.updateColor(delta);
   }
 
   dispose(): void {
