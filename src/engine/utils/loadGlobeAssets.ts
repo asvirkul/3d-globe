@@ -10,10 +10,11 @@ export type GlobeAssets = {
 export async function loadGlobeAssets(): Promise<Result<GlobeAssets>> {
   try {
     const loader = new THREE.TextureLoader();
+    const base = import.meta.env.BASE_URL;
     const [earth, clouds, lights] = await Promise.all([
-      loader.loadAsync('/assets/textures/earth-1.jpg'),
-      loader.loadAsync('/assets/textures/clouds.jpg'),
-      loader.loadAsync('/assets/textures/earth-2.jpg'),
+      loader.loadAsync(`${base}assets/textures/earth-1.jpg`),
+      loader.loadAsync(`${base}assets/textures/clouds.jpg`),
+      loader.loadAsync(`${base}assets/textures/earth-2.jpg`),
     ]);
 
     return { ok: true, value: { earth, clouds, lights } };

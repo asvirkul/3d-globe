@@ -35,7 +35,8 @@ export function computeBB(geometry: CountryGeometry): BBox {
 
 export async function loadCountries(): Promise<Result<CountriesMap>> {
   try {
-    const res = await fetch('/assets/data/border.json');
+    const base = import.meta.env.BASE_URL;
+    const res = await fetch(`${base}assets/data/border.json`);
 
     if (!res.ok) {
       return { ok: false, error: `HTTP ${res.status}` };

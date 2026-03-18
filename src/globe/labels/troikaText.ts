@@ -3,9 +3,10 @@ import { Text } from 'troika-three-text';
 
 export function createCountryText(name: string, fontPx: number): Text {
   const text = new Text();
+  const base = import.meta.env.BASE_URL;
 
   text.text = name;
-  text.font = '/assets/fonts/NotoSans-Regular.ttf';
+  text.font = `${base}assets/fonts/NotoSans-Regular.ttf`;
   text.fontSize = fontPx * 0.3;
 
   text.frustumCulled = false;
