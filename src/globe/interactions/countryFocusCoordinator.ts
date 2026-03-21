@@ -1,4 +1,8 @@
-export class InteractionCoordinator {
+type InteractionCoordinatorHandlers = {
+  onFocusChange?: (iso: string | null) => void;
+};
+
+export class CountryFocusCoordinator {
   private pendingIso: string | null = null;
   private pendingTime = 0;
   private focusedIso: string | null = null;
@@ -6,7 +10,7 @@ export class InteractionCoordinator {
   private readonly focusDelayMs = 200;
   private readonly nullDelayMs = 300;
 
-  constructor(private highlight: (iso: string | null) => void) {}
+  constructor(private handlers: InteractionCoordinatorHandlers = {}) {}
 
   public setFocused(iso: string | null): void {
     const now = performance.now();
@@ -22,7 +26,7 @@ export class InteractionCoordinator {
     if (iso === this.focusedIso) return;
 
     this.focusedIso = iso;
-    this.highlight(iso);
+    this.handlers.onFocusChange?.(iso);
   }
 
   public getFocusedIso(): string | null {
@@ -35,6 +39,6 @@ export class InteractionCoordinator {
 
     if (this.focusedIso === null) return;
     this.focusedIso = null;
-    this.highlight(null);
+    this.handlers.onFocusChange?.(null);
   }
 }

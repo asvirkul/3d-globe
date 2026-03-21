@@ -248,7 +248,6 @@ export class CountryLabelsLayer {
       if (isOpacityVisible) {
         entry.label.fillOpacity = entry.opacity;
         entry.label.outlineOpacity = entry.opacity;
-        entry.label.outlineOpacity = entry.opacity;
       }
 
       if (isTargetNear(entry.opacity, entry.targetOpacity)) {

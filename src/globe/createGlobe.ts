@@ -16,9 +16,10 @@ import { LightController } from '../engine/controllers/LightController';
 import { createCountryBordersLayer } from './borders/countryBorderLayer';
 import { CountryPickController } from './interactions/countryPickController';
 import { CountryFocusController } from './interactions/countryFocusController';
-import { InteractionCoordinator } from './interactions/interactionCoordinator';
+import { CountryFocusCoordinator } from './interactions/countryFocusCoordinator';
 import { CountryLabelsController } from './labels/countryLabelsController';
 import { CountryLabelsLayer } from './labels/countryLabelsLayer';
+import { createCountryFocusSync } from './countryHighlightSync';
 import { LABELS_CONFIG } from './labels/config';
 
 export function createGlobe(
@@ -51,7 +52,7 @@ export function createGlobe(
   engine.addController(cameraController);
 
   const earthController = new EarthController(cameraController, {
-    autoRotate: true,
+    autoRotate: false,
     rotateSpeed: 0.05,
   });
   engine.addController(earthController);
@@ -103,8 +104,26 @@ export function createGlobe(
 
   cameraController.lookAtLatLon(0, 0);
 
-  const interactionCoordinator = new InteractionCoordinator(bordersLayer.highlight);
   const canCountryInteract = () => cameraController.getZoomNormalized() <= minCountryZoom;
+
+  const labelsLayer = new CountryLabelsLayer(countries, camera, EARTH_RADIUS, {
+    ...LABELS_CONFIG,
+    getZoomNormalized: () => cameraController.getZoomNormalized(),
+    container,
+    filters: [],
+  });
+
+  const focusSync = createCountryFocusSync({
+    canInteract: canCountryInteract,
+    highlightBorder: bordersLayer.highlight,
+  });
+
+  const focusCoordinator = new CountryFocusCoordinator({
+    onFocusChange: (iso) => {
+      labelsLayer.setFocusedIso(iso);
+      focusSync.sync(iso);
+    },
+  });
 
   const pickController = new CountryPickController(
     renderer.domElement,
@@ -116,27 +135,19 @@ export function createGlobe(
         options.onCountryPick?.(iso);
       },
       canInteract: canCountryInteract,
-      getFocusedIso: () => interactionCoordinator.getFocusedIso(),
+      getFocusedIso: () => focusCoordinator.getFocusedIso(),
     }
   );
 
   const focusController = new CountryFocusController(earth.mesh, camera, countries, {
     canInteract: canCountryInteract,
     onFocus: (iso) => {
-      interactionCoordinator.setFocused(iso);
-      labelsLayer.setFocusedIso(interactionCoordinator.getFocusedIso());
+      focusCoordinator.setFocused(iso);
     },
   });
 
   engine.addController(pickController);
   engine.addController(focusController);
-
-  const labelsLayer = new CountryLabelsLayer(countries, camera, EARTH_RADIUS, {
-    ...LABELS_CONFIG,
-    getZoomNormalized: () => cameraController.getZoomNormalized(),
-    container,
-    filters: [],
-  });
 
   world.addToEarth(labelsLayer.object3d);
   engine.addController(new CountryLabelsController(labelsLayer));
@@ -150,7 +161,9 @@ export function createGlobe(
     setAutoRotate: (enabled) =>
       enabled ? earthController.resumeAutoRotate() : earthController.pauseAutoRotate(),
     flyToLatLon: cameraController.flyToLatLon.bind(cameraController),
-    highlightCountry: bordersLayer.highlight,
+    highlightCountry: (iso) => {
+      focusSync.sync(iso);
+    },
   };
   return api;
 }
