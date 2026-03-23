@@ -20,6 +20,7 @@ import { CountryFocusCoordinator } from './interactions/countryFocusCoordinator'
 import { CountryLabelsController } from './labels/countryLabelsController';
 import { CountryLabelsLayer } from './labels/countryLabelsLayer';
 import { createCountryFocusSync } from './countryHighlightSync';
+import { CountryLabelInteractions } from './labels/countryLabelsInteractions';
 import { LABELS_CONFIG } from './labels/config';
 
 export function createGlobe(
@@ -125,6 +126,14 @@ export function createGlobe(
     },
   });
 
+  const labelsInteraction = new CountryLabelInteractions({
+    dom: renderer.domElement,
+    camera,
+    canInteract: canCountryInteract,
+    getFocusedIso: () => focusCoordinator.getFocusedIso(),
+    getEntryByIso: (iso) => labelsLayer.getEntryByIso(iso),
+  });
+
   const pickController = new CountryPickController(
     renderer.domElement,
     earth.mesh,
@@ -136,6 +145,7 @@ export function createGlobe(
       },
       canInteract: canCountryInteract,
       getFocusedIso: () => focusCoordinator.getFocusedIso(),
+      pickLabelIso: (clientX, clientY) => labelsInteraction.pickFocusedIso(clientX, clientY),
     }
   );
 
@@ -150,7 +160,7 @@ export function createGlobe(
   engine.addController(focusController);
 
   world.addToEarth(labelsLayer.object3d);
-  engine.addController(new CountryLabelsController(labelsLayer));
+  engine.addController(new CountryLabelsController(labelsLayer, labelsInteraction));
 
   engine.warmup();
 

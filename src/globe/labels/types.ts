@@ -27,6 +27,7 @@ export type ScreenRect = {
 };
 
 export type LabelEntry = {
+  iso: string;
   label: TroikaTextRenderInfo;
   normal: THREE.Vector3;
   importance: number;

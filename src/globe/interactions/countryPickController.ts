@@ -8,6 +8,7 @@ type CountryPickHandlers = {
   onPick?: (iso: string | null) => void;
   canInteract?: () => boolean;
   getFocusedIso?: () => string | null;
+  pickLabelIso?: (clientX: number, clientY: number) => string | null;
 };
 
 export class CountryPickController implements Controller {
@@ -58,8 +59,10 @@ export class CountryPickController implements Controller {
     if (this.handlers.canInteract?.() === false) return;
     if (moved >= this.tapThreshold) return;
     const focusedIso = this.handlers.getFocusedIso?.();
-    const iso = this.pickIso(e.clientX, e.clientY);
-    if (focusedIso !== undefined && focusedIso !== null && iso !== focusedIso) return;
+    if (!focusedIso) return;
+    const labelIso = this.handlers.pickLabelIso?.(e.clientX, e.clientY);
+    const iso = labelIso ?? this.pickIso(e.clientX, e.clientY);
+    if (iso !== focusedIso) return;
     this.handlers.onPick?.(iso);
   };
 

@@ -69,6 +69,7 @@ export class CountryLabelsLayer {
       const area = country.properties.area_km2;
       const labelLat = country.properties.label_lat;
       const labelLon = country.properties.label_lon;
+      const iso = country.properties.iso_a2;
 
       if (
         !name ||
@@ -94,6 +95,7 @@ export class CountryLabelsLayer {
       this.group.add(label);
 
       const entry: LabelEntry = {
+        iso: iso,
         label: label as TroikaTextRenderInfo,
         normal,
         importance,
@@ -105,7 +107,7 @@ export class CountryLabelsLayer {
       };
 
       this.labels.push(entry);
-      this.labelsByIso.set(country.properties.iso_a2, entry);
+      this.labelsByIso.set(iso, entry);
     }
     this.labels.sort((a, b) => b.importance - a.importance);
   }
@@ -317,6 +319,10 @@ export class CountryLabelsLayer {
 
   public get object3d(): THREE.Group {
     return this.group;
+  }
+
+  public getEntryByIso(iso: string): LabelEntry | undefined {
+    return this.labelsByIso.get(iso);
   }
 
   public updateVisibility(): void {
