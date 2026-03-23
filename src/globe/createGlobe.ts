@@ -53,8 +53,8 @@ export function createGlobe(
   engine.addController(cameraController);
 
   const earthController = new EarthController(cameraController, {
-    autoRotate: false,
-    rotateSpeed: 0.05,
+    autoRotate: true,
+    rotateSpeed: 0.03,
   });
   engine.addController(earthController);
 

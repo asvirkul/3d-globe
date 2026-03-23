@@ -9,7 +9,7 @@ export class OrbitController implements Controller {
   private lastRotate = { x: 0, y: 0 };
   private lastPinchDistance: number | null = null;
   private zoomSpeed = 0.05;
-  private sensitivity = 1;
+  private sensitivity = 0.6;
   private raycaster = new THREE.Raycaster();
   private mouse = new THREE.Vector2();
   private camera: THREE.PerspectiveCamera;
@@ -82,8 +82,10 @@ export class OrbitController implements Controller {
       const baseFov = this.cameraController.getBaseFov();
       const fovFactor = this.camera.fov / baseFov;
       const degreesPerPixel = 0.15;
-      const lonDelta = dx * degreesPerPixel * this.sensitivity * fovFactor;
-      const latDelta = dy * degreesPerPixel * this.sensitivity * fovFactor;
+      const zoom = this.cameraController.getZoomNormalized();
+      const zoomFactor = THREE.MathUtils.lerp(0.3, 1, zoom);
+      const lonDelta = dx * degreesPerPixel * this.sensitivity * fovFactor * zoomFactor;
+      const latDelta = dy * degreesPerPixel * this.sensitivity * fovFactor * zoomFactor;
 
       this.cameraController.addLatLon(-latDelta, -lonDelta);
     }
