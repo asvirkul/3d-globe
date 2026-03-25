@@ -45,10 +45,10 @@ export function createGlobe(
 
   const cameraController = new CameraController(camera, {
     radius: EARTH_RADIUS,
-    distance: EARTH_RADIUS * 3,
+    distance: EARTH_RADIUS * 3.5,
     damping: 0.09,
     minDistance: EARTH_RADIUS * 1.2,
-    maxDistance: EARTH_RADIUS * 3,
+    maxDistance: EARTH_RADIUS * 3.5,
   });
   engine.addController(cameraController);
 
@@ -110,6 +110,7 @@ export function createGlobe(
   const labelsLayer = new CountryLabelsLayer(countries, camera, EARTH_RADIUS, {
     ...LABELS_CONFIG,
     getZoomNormalized: () => cameraController.getZoomNormalized(),
+    canInteract: canCountryInteract,
     container,
     filters: [],
   });

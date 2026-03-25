@@ -20,6 +20,7 @@ function getBlockBounds(label: TroikaTextRenderInfo): BlockBounds | null {
 
 export type CountryLabelsLayerOptions = {
   getZoomNormalized: () => number;
+  canInteract?: () => boolean;
   container: HTMLElement;
 
   farMinImportance?: number;
@@ -391,6 +392,8 @@ export class CountryLabelsLayer {
     );
     const limit = accepted.length;
 
+    const canShow = this.options.canInteract ? this.options.canInteract() : true;
+
     for (const entry of this.labels) {
       entry.wasAccepted = false;
       this.setTargetOpacity(entry, 0);
@@ -398,7 +401,7 @@ export class CountryLabelsLayer {
 
     for (let i = 0; i < limit; i++) {
       accepted[i].wasAccepted = true;
-      this.setTargetOpacity(accepted[i], 1);
+      this.setTargetOpacity(accepted[i], canShow ? 1 : 0);
     }
   }
 
