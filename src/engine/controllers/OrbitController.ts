@@ -9,7 +9,7 @@ export class OrbitController implements Controller {
   private lastRotate = { x: 0, y: 0 };
   private lastPinchDistance: number | null = null;
   private zoomSpeed = 0.05;
-  private sensitivity = 0.6;
+  private sensitivity = 0.5;
   private raycaster = new THREE.Raycaster();
   private mouse = new THREE.Vector2();
   private camera: THREE.PerspectiveCamera;
