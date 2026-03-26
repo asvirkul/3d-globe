@@ -47,7 +47,7 @@ export function createGlobe(
     radius: EARTH_RADIUS,
     distance: EARTH_RADIUS * 3.5,
     damping: 0.09,
-    minDistance: EARTH_RADIUS * 1.2,
+    minDistance: EARTH_RADIUS * 1.35,
     maxDistance: EARTH_RADIUS * 3.5,
   });
   engine.addController(cameraController);
