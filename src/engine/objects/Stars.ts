@@ -13,7 +13,7 @@ export type StarsOptions = {
 };
 
 export function createStars(options: StarsOptions): THREE.Points {
-  const { count = 1000, radius, minSize = 1, maxSize = 5, depthSpread = 0.2 } = options;
+  const { count = 3500, radius, minSize = 1, maxSize = 5, depthSpread = 0.2 } = options;
 
   const geometry = new THREE.BufferGeometry();
 
