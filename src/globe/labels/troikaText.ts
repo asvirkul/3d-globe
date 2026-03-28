@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { Text } from 'troika-three-text';
+import fontUrl from '../../../public/assets/fonts/Carlito-Regular.woff';
 
 export function createCountryText(name: string, fontPx: number): Text {
   const text = new Text();
-  const base = import.meta.env.BASE_URL;
 
   text.text = name;
-  text.font = `${base}assets/fonts/Carlito-Regulr.woff`;
+  text.font = fontUrl;
   text.fontSize = fontPx * 0.26;
 
   text.frustumCulled = false;
