@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Text } from 'troika-three-text';
-import fontUrl from '../../../public/assets/fonts/Carlito-Regular.woff';
+import fontUrl from '/assets/fonts/Carlito-Regular.woff';
 
 export function createCountryText(name: string, fontPx: number): Text {
   const text = new Text();
@@ -21,11 +21,11 @@ export function createCountryText(name: string, fontPx: number): Text {
   text.overflowWrap = 'break-word';
   text.lineHeight = 1.05;
   text.outlineColor = '#000000';
-  text.outlineOpacity = 0.4;
+  text.outlineOpacity = 0;
   text.outlineWidth = 0.02;
   text.outlineBlur = 0;
   text.fillOpacity = 0;
-  text.visible = false;
+  text.visible = true;
 
   const material = new THREE.MeshBasicMaterial({
     transparent: true,
