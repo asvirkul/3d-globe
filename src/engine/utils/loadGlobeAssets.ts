@@ -14,7 +14,7 @@ export async function loadGlobeAssets(): Promise<Result<GlobeAssets>> {
     const [earth, clouds, lights] = await Promise.all([
       loader.loadAsync(`${base}assets/textures/earth-low.webp`),
       loader.loadAsync(`${base}assets/textures/clouds.jpg`),
-      loader.loadAsync(`${base}assets/textures/earth-2.jpg`),
+      loader.loadAsync(`${base}assets/textures/lights-low.webp`),
     ]);
 
     return { ok: true, value: { earth, clouds, lights } };
