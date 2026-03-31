@@ -393,7 +393,7 @@ export class CountryLabelsLayer {
     const limit = accepted.length;
 
     const canShow = this.options.canInteract ? this.options.canInteract() : true;
-
+    if (canShow) performance.mark('mark');
     for (const entry of this.labels) {
       entry.wasAccepted = false;
       this.setTargetOpacity(entry, 0);
