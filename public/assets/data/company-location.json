@@ -1,0 +1,28 @@
+{
+  "countries": {
+    "US": {
+      "companyCount": 12
+    },
+    "DE": {
+      "companyCount": 5
+    },
+    "JP": {
+      "companyCount": 4
+    },
+    "BR": {
+      "companyCount": 2
+    },
+    "AE": {
+      "companyCount": 3
+    },
+    "GB": {
+      "companyCount": 6
+    },
+    "IN": {
+      "companyCount": 7
+    },
+    "SG": {
+      "companyCount": 2
+    }
+  }
+}
