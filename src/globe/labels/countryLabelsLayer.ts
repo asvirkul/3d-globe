@@ -7,6 +7,7 @@ import type {
   LabelEntry,
   LabelsFrameState,
   LabelFilter,
+  VisibleLabelRect,
 } from './types';
 import { buildAreaScale, getLabelSizePx, resolveImportance } from './areaScale';
 import { createCountryText } from './troikaText';
@@ -172,6 +173,44 @@ export class CountryLabelsLayer {
       w: Math.max(1, maxPxX - minPxX + pad * 2),
       h: Math.max(1, maxPxY - minPxY + pad * 2),
     };
+  }
+
+  public getVisibleLabelRects(): readonly VisibleLabelRect[] {
+    const viewportW = this.options.container.clientWidth;
+    const viewportH = this.options.container.clientHeight;
+
+    if (viewportW <= 0 || viewportH <= 0) return [];
+
+    const rects: VisibleLabelRect[] = [];
+
+    for (const entry of this.labels) {
+      if (!entry.wasAccepted || entry.opacity <= 0.01) continue;
+
+      const rect = this.approxLabelRect(entry, viewportW, viewportH);
+      if (!rect) continue;
+
+      rects.push({
+        iso: entry.iso,
+        rect,
+      });
+    }
+
+    return rects;
+  }
+
+  public getLabelRect(iso: string): ScreenRect | null {
+    const entry = this.labelsByIso.get(iso);
+    if (!entry) return null;
+
+    const viewportH = this.options.container.clientHeight;
+    const viewportW = this.options.container.clientWidth;
+
+    if (viewportH <= 0 || viewportW <= 0) return null;
+
+    entry.label.quaternion.copy(this.camera.quaternion);
+    entry.label.updateWorldMatrix(false, false);
+
+    return this.approxLabelRect(entry, viewportW, viewportH);
   }
 
   private selectStableVisible(

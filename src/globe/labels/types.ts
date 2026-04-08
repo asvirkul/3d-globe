@@ -48,4 +48,9 @@ export type LabelsFrameState = {
   horizonDot: number;
 };
 
+export type VisibleLabelRect = {
+  iso: string;
+  rect: ScreenRect;
+};
+
 export type LabelFilter = (entry: LabelEntry, state: LabelsFrameState) => boolean;
