@@ -21,6 +21,8 @@ import { CountryLabelsController } from './labels/countryLabelsController';
 import { CountryLabelsLayer } from './labels/countryLabelsLayer';
 import { createCountryFocusSync } from './countryHighlightSync';
 import { CountryLabelInteractions } from './labels/countryLabelsInteractions';
+import { CountryPinsLayer } from './pins/countryPinsLayer';
+import { CountryPinsController } from './pins/countryPinController';
 import { LABELS_CONFIG } from './labels/config';
 
 export function createGlobe(
@@ -33,7 +35,7 @@ export function createGlobe(
   const engine = new GlobeEngine(container);
   const renderer = engine.getRenderer();
   const camera = engine.getCamera();
-  const { assets, countries } = data;
+  const { assets, countries, pins } = data;
 
   const earth = createEarth({
     radius: EARTH_RADIUS,
@@ -161,7 +163,19 @@ export function createGlobe(
   engine.addController(focusController);
 
   world.addToEarth(labelsLayer.object3d);
+
   engine.addController(new CountryLabelsController(labelsLayer, labelsInteraction));
+
+  const pinsLayer = new CountryPinsLayer(countries, pins, camera, EARTH_RADIUS, {
+    canShow: canCountryInteract,
+    container,
+    getVisibleLabelRects: () => labelsLayer.getVisibleLabelRects(),
+    getLabelRect: (iso) => labelsLayer.getLabelRect(iso),
+  });
+
+  engine.addController(new CountryPinsController(pinsLayer));
+
+  world.addToEarth(pinsLayer.object3d);
 
   engine.warmup();
 
