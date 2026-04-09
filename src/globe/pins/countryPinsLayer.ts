@@ -1,9 +1,16 @@
 import * as THREE from 'three';
-import type { PinEntry, CountryPinData, ScreenRect, PinPlacement } from './types';
+import type {
+  PinEntry,
+  CountryPinData,
+  ScreenRect,
+  PinsLayoutState,
+  PinsLayoutContext,
+} from './types';
 import type { CountriesMap } from '../borders/types';
+import type { VisibleLabelRect } from '../labels/types';
 import { lon2xyz } from '../../engine/utils/geo';
 import { isValidCoord } from '../geo/geo';
-import type { VisibleLabelRect } from '../labels/types';
+import { resolvePinPlacement } from './countryPinPlacement';
 
 export type CountryPinsLayerOptions = {
   canShow: () => boolean;
@@ -18,8 +25,8 @@ export class CountryPinsLayer {
   private static readonly FADE_SPEED = 4;
   private readonly cameraRight = new THREE.Vector3();
   private readonly cameraUp = new THREE.Vector3();
-  private readonly worldPosition = new THREE.Vector3();
-  private readonly worldAnchor = new THREE.Vector3();
+  private readonly pinsLayoutContext: PinsLayoutContext;
+  private readonly pinScreenSize = 16; // px
 
   constructor(
     private countries: CountriesMap,
@@ -28,10 +35,20 @@ export class CountryPinsLayer {
     private radius: number,
     private options: CountryPinsLayerOptions
   ) {
+    this.pinsLayoutContext = {
+      camera: this.camera,
+      group: this.group,
+      radius: this.radius,
+      pinScreenSize: this.pinScreenSize,
+      getLabelRect: this.options.getLabelRect,
+      pinsScratch: {
+        worldAnchor: new THREE.Vector3(),
+        worldPosition: new THREE.Vector3(),
+        localPosition: new THREE.Vector3(),
+      },
+    };
     this.entries = this.buildPinEntries();
   }
-
-  private readonly pinScreenSize = 16; // px
 
   private buildPinEntries(): PinEntry[] {
     const pinEntries: PinEntry[] = [];
@@ -105,63 +122,26 @@ export class CountryPinsLayer {
     return new Map(labelRects.map((item) => [item.iso, item.rect]));
   }
 
-  private resolvePinPlacement(
-    entry: PinEntry,
-    visibleRectsByIso: ReadonlyMap<string, ScreenRect>
-  ): PinPlacement | null {
-    const labelRect = visibleRectsByIso.get(entry.iso) ?? this.options.getLabelRect(entry.iso);
-
-    if (!labelRect) return null;
-
-    const gapY = -(5 + this.pinScreenSize * 0.5);
-    const gapX = 0;
-
-    const x = labelRect.x + labelRect.w * 0.5;
-    const y = labelRect.y + gapY;
-
+  private createLayoutState(): PinsLayoutState | null {
     const viewportW = this.options.container.clientWidth;
     const viewportH = this.options.container.clientHeight;
 
-    const fitsViewport =
-      x - this.pinScreenSize * 0.5 >= 0 &&
-      x + this.pinScreenSize * 0.5 <= viewportW &&
-      y - this.pinScreenSize * 0.5 >= 0 &&
-      y + this.pinScreenSize * 0.5 <= viewportH;
-
-    if (!fitsViewport) return null;
-
-    const worldAnchor = this.worldAnchor.copy(entry.anchor).applyMatrix4(this.group.matrixWorld);
-    const rawDistance = this.camera.position.distanceTo(worldAnchor);
-    const baseDistance = this.radius;
-    const distance = THREE.MathUtils.lerp(baseDistance, rawDistance, 0.35);
-
-    const worldHeight = 2 * distance * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
-    const worldWidth = worldHeight * this.camera.aspect;
-
-    const worldUnitPerPixelX = worldWidth / viewportW;
-    const worldUnitPerPixelY = worldHeight / viewportH;
+    if (viewportW <= 0 || viewportH <= 0) return null;
 
     this.cameraRight.setFromMatrixColumn(this.camera.matrixWorld, 0);
     this.cameraUp.setFromMatrixColumn(this.camera.matrixWorld, 1);
 
-    const localPos = this.worldPosition
-      .copy(worldAnchor)
-      .addScaledVector(this.cameraRight, gapX * worldUnitPerPixelX)
-      .addScaledVector(this.cameraUp, -gapY * worldUnitPerPixelY);
-
-    this.group.worldToLocal(localPos);
-
     return {
-      visible: true,
-      position: localPos.clone(),
+      viewportW,
+      viewportH,
+      cameraRight: this.cameraRight,
+      cameraUp: this.cameraUp,
     };
   }
 
-  private layoutPins(
-    visibleRectsByIso: ReadonlyMap<string, ScreenRect>
-  ): void {
+  private layoutPins(state: PinsLayoutState): void {
     for (const entry of this.entries) {
-      const placement = this.resolvePinPlacement(entry, visibleRectsByIso);
+      const placement = resolvePinPlacement(entry, state, this.pinsLayoutContext);
       if (!placement) {
         entry.hasPlacement = false;
         entry.targetOpacity = 0;
@@ -206,17 +186,10 @@ export class CountryPinsLayer {
       return;
     }
 
-    const visibleLabelRects = this.options.getVisibleLabelRects();
-    const visibleRectsByIso = this.createVisibleRectMap(visibleLabelRects);
+    const state = this.createLayoutState();
+    if (!state) return;
 
-    if (visibleLabelRects.length === 0) {
-      for (const entry of this.entries) {
-        entry.targetOpacity = 0;
-      }
-      return;
-    }
-
-    this.layoutPins(visibleRectsByIso);
+    this.layoutPins(state);
   }
 
   public dispose(): void {

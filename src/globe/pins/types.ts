@@ -21,8 +21,29 @@ export type PinEntry = {
   hasPlacement: boolean;
 };
 
+export type PinsLayoutState = {
+  viewportW: number;
+  viewportH: number;
+  cameraRight: THREE.Vector3;
+  cameraUp: THREE.Vector3;
+};
+
+export type PinsLayoutContext = {
+  camera: THREE.PerspectiveCamera;
+  group: THREE.Group;
+  radius: number;
+  pinScreenSize: number;
+  getLabelRect: (iso: string) => ScreenRect | null;
+  pinsScratch: PinsLayoutScratch;
+};
+
+export type PinsLayoutScratch = {
+  worldAnchor: THREE.Vector3;
+  worldPosition: THREE.Vector3;
+  localPosition: THREE.Vector3;
+};
+
 export type PinPlacement = {
-  visible: boolean;
   position: THREE.Vector3;
 };
 
