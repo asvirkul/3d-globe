@@ -27,6 +27,11 @@ export class CountryPinsLayer {
   private readonly cameraUp = new THREE.Vector3();
   private readonly pinsLayoutContext: PinsLayoutContext;
   private readonly pinScreenSize = 16; // px
+  private readonly proj = new THREE.Matrix4();
+  private readonly frustum = new THREE.Frustum();
+  private readonly worldPos = new THREE.Vector3();
+  private readonly camDir = new THREE.Vector3();
+  private readonly normal = new THREE.Vector3();
 
   constructor(
     private countries: CountriesMap,
@@ -131,16 +136,60 @@ export class CountryPinsLayer {
     this.cameraRight.setFromMatrixColumn(this.camera.matrixWorld, 0);
     this.cameraUp.setFromMatrixColumn(this.camera.matrixWorld, 1);
 
+    const visibleLabelRects = this.options.getVisibleLabelRects();
+    const visibleRectsByIso = this.createVisibleRectMap(visibleLabelRects);
+
     return {
       viewportW,
       viewportH,
       cameraRight: this.cameraRight,
       cameraUp: this.cameraUp,
+      visibleLabelRects,
+      visibleRectsByIso,
     };
   }
 
+  private computeHorizonDot(): number {
+    const camDist = this.camera.position.length();
+    if (camDist <= this.radius) return 1;
+    const base = this.radius / camDist;
+
+    const margin = 0.02;
+    const maxDot = 0.9;
+
+    return THREE.MathUtils.clamp(base + margin, 0, maxDot);
+  }
+
+  private getWorldPos(entry: PinEntry): THREE.Vector3 {
+    return this.worldPos.copy(entry.anchor).applyMatrix4(this.group.matrixWorld);
+  }
+
+  private isPinInFrustum(entry: PinEntry): boolean {
+    return this.frustum.containsPoint(this.getWorldPos(entry));
+  }
+
+  private isPinOverHorizon(entry: PinEntry): boolean {
+    const normal = this.normal.copy(this.getWorldPos(entry)).normalize();
+    const cameraDir = this.camDir.copy(this.camera.position).normalize();
+
+    const horizonDot = normal.dot(cameraDir);
+
+    return horizonDot > this.computeHorizonDot();
+  }
+
   private layoutPins(state: PinsLayoutState): void {
+    this.group.updateWorldMatrix(true, false);
+
+    this.proj.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
+    this.frustum.setFromProjectionMatrix(this.proj);
+
     for (const entry of this.entries) {
+      if (!this.isPinInFrustum(entry) || !this.isPinOverHorizon(entry)) {
+        entry.hasPlacement = false;
+        entry.targetOpacity = 0;
+        continue;
+      }
+
       const placement = resolvePinPlacement(entry, state, this.pinsLayoutContext);
       if (!placement) {
         entry.hasPlacement = false;

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { VisibleLabelRect } from '../labels/types';
 
 export type CountryPinMeta = {
   companyCount: number;
@@ -26,6 +27,8 @@ export type PinsLayoutState = {
   viewportH: number;
   cameraRight: THREE.Vector3;
   cameraUp: THREE.Vector3;
+  visibleLabelRects: readonly VisibleLabelRect[];
+  visibleRectsByIso: ReadonlyMap<string, ScreenRect>;
 };
 
 export type PinsLayoutContext = {
@@ -45,6 +48,7 @@ export type PinsLayoutScratch = {
 
 export type PinPlacement = {
   position: THREE.Vector3;
+  pinRect: ScreenRect;
 };
 
 export type ScreenRect = {

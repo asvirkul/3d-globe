@@ -49,7 +49,15 @@ export function resolvePinPlacement(
   const localPos = context.pinsScratch.localPosition.copy(worldPos);
   context.group.worldToLocal(localPos);
 
+  const pinRect = {
+    x: x - context.pinScreenSize / 2,
+    y: y - context.pinScreenSize / 2,
+    w: context.pinScreenSize,
+    h: context.pinScreenSize,
+  };
+
   return {
     position: localPos.clone(),
+    pinRect,
   };
 }
