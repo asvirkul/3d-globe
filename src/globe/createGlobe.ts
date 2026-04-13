@@ -165,7 +165,7 @@ export function createGlobe(
   const pinsLayer = new CountryPinsLayer(countries, pins, camera, EARTH_RADIUS, {
     canShow: canCountryInteract,
     container,
-    getLabelRect: (iso) => labelsLayer.getLabelRect(iso),
+    getLabelRectsByIso: () => labelsLayer.getLabelRectsByIso(),
     setHiddenByPins: (isoSet) => labelsLayer.setHiddenByPins(isoSet),
   });
 

@@ -15,7 +15,7 @@ import { PINS_CONFIG } from './config';
 export type CountryPinsLayerOptions = {
   canShow: () => boolean;
   container: HTMLElement;
-  getLabelRect: (iso: string) => ScreenRect | null;
+  getLabelRectsByIso: () => ReadonlyMap<string, ScreenRect>;
   setHiddenByPins: (isoSet: ReadonlySet<string>) => void;
 };
 
@@ -46,7 +46,6 @@ export class CountryPinsLayer {
       group: this.group,
       radius: this.radius,
       pinScreenSize: this.pinScreenSize,
-      getLabelRect: this.options.getLabelRect,
       pinsScratch: {
         worldAnchor: new THREE.Vector3(),
         worldPosition: new THREE.Vector3(),
@@ -131,11 +130,14 @@ export class CountryPinsLayer {
     this.cameraRight.setFromMatrixColumn(this.camera.matrixWorld, 0);
     this.cameraUp.setFromMatrixColumn(this.camera.matrixWorld, 1);
 
+    const labelRectsByIso = this.options.getLabelRectsByIso();
+
     return {
       viewportW,
       viewportH,
       cameraRight: this.cameraRight,
       cameraUp: this.cameraUp,
+      labelRectsByIso,
     };
   }
 
@@ -188,11 +190,9 @@ export class CountryPinsLayer {
         continue;
       }
 
-      for (const iso of this.countries.keys()) {
+      for (const [iso, rect] of state.labelRectsByIso) {
         if (iso === entry.iso) continue;
-        const labelRect = this.options.getLabelRect(iso);
-        if (!labelRect) continue;
-        if (this.intersects(placement.pinRect, labelRect)) {
+        if (this.intersects(placement.pinRect, rect)) {
           this.hiddenByPins.add(iso);
         }
       }

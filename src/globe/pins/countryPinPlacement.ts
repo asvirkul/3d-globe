@@ -8,7 +8,7 @@ export function resolvePinPlacement(
   state: PinsLayoutState,
   context: PinsLayoutContext
 ): PinPlacement | null {
-  const labelRect = context.getLabelRect(entry.iso);
+  const labelRect = state.labelRectsByIso.get(entry.iso);
   if (!labelRect) return null;
 
   const viewportW = state.viewportW;

@@ -51,6 +51,8 @@ export class CountryLabelsLayer {
   private readonly _tempRectsBuffer: ScreenRect[] = [];
   private readonly _colorAnimatingBuffer: LabelEntry[] = [];
   private readonly _opacityBuffer: LabelEntry[] = [];
+  private readonly _labelRectsBuffer = new Map<string, ScreenRect>();
+  private static readonly EMPTY_RECTS: ReadonlyMap<string, ScreenRect> = new Map();
   private readonly labelsByIso = new Map<string, LabelEntry>();
   private focusedIso: string | null = null;
   private static readonly FADE_SPEED = 4;
@@ -174,19 +176,23 @@ export class CountryLabelsLayer {
     };
   }
 
-  public getLabelRect(iso: string): ScreenRect | null {
-    const entry = this.labelsByIso.get(iso);
-    if (!entry) return null;
-
+  public getLabelRectsByIso(): ReadonlyMap<string, ScreenRect> {
     const viewportH = this.options.container.clientHeight;
     const viewportW = this.options.container.clientWidth;
 
-    if (viewportH <= 0 || viewportW <= 0) return null;
+    if (viewportH <= 0 || viewportW <= 0) return CountryLabelsLayer.EMPTY_RECTS;
 
-    entry.label.quaternion.copy(this.camera.quaternion);
-    entry.label.updateWorldMatrix(false, false);
+    this._labelRectsBuffer.clear();
+    for (const entry of this.labels) {
+      entry.label.quaternion.copy(this.camera.quaternion);
+      entry.label.updateWorldMatrix(false, false);
 
-    return this.approxLabelRect(entry, viewportW, viewportH);
+      const rect = this.approxLabelRect(entry, viewportW, viewportH);
+      if (!rect) continue;
+      this._labelRectsBuffer.set(entry.iso, rect);
+    }
+
+    return this._labelRectsBuffer;
   }
 
   private hiddenByPins: ReadonlySet<string> = new Set();

@@ -26,6 +26,7 @@ export type PinsLayoutState = {
   viewportH: number;
   cameraRight: THREE.Vector3;
   cameraUp: THREE.Vector3;
+  labelRectsByIso: ReadonlyMap<string, ScreenRect>;
 };
 
 export type PinsLayoutContext = {
@@ -33,7 +34,6 @@ export type PinsLayoutContext = {
   group: THREE.Group;
   radius: number;
   pinScreenSize: number;
-  getLabelRect: (iso: string) => ScreenRect | null;
   pinsScratch: PinsLayoutScratch;
 };
 
