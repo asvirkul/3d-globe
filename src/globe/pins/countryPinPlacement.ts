@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { PinEntry, PinPlacement } from './types';
 import type { PinsLayoutState, PinsLayoutContext } from './types';
+import { PINS_CONFIG } from './config';
 
 export function resolvePinPlacement(
   entry: PinEntry,
@@ -13,7 +14,7 @@ export function resolvePinPlacement(
   const viewportW = state.viewportW;
   const viewportH = state.viewportH;
 
-  const gapY = -(5 + context.pinScreenSize * 0.5);
+  const gapY = -(PINS_CONFIG.labelGap + context.pinScreenSize * 0.5);
   const gapX = 0;
 
   const x = labelRect.x + labelRect.w * 0.5;

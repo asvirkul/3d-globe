@@ -11,6 +11,7 @@ import type { VisibleLabelRect } from '../labels/types';
 import { lon2xyz } from '../../engine/utils/geo';
 import { isValidCoord } from '../geo/geo';
 import { resolvePinPlacement } from './countryPinPlacement';
+import { PINS_CONFIG } from './config';
 
 export type CountryPinsLayerOptions = {
   canShow: () => boolean;
@@ -93,7 +94,7 @@ export class CountryPinsLayer {
   }
 
   private get pinWorldSize(): number {
-    return this.radius * 0.01;
+    return this.radius * PINS_CONFIG.worldSizeFactor;
   }
 
   public get object3d(): THREE.Group {
@@ -154,8 +155,8 @@ export class CountryPinsLayer {
     if (camDist <= this.radius) return 1;
     const base = this.radius / camDist;
 
-    const margin = 0.02;
-    const maxDot = 0.9;
+    const margin = PINS_CONFIG.margin;
+    const maxDot = PINS_CONFIG.maxDot;
 
     return THREE.MathUtils.clamp(base + margin, 0, maxDot);
   }
