@@ -7,7 +7,6 @@ import type {
   PinsLayoutContext,
 } from './types';
 import type { CountriesMap } from '../borders/types';
-import type { VisibleLabelRect } from '../labels/types';
 import { lon2xyz } from '../../engine/utils/geo';
 import { isValidCoord } from '../geo/geo';
 import { resolvePinPlacement } from './countryPinPlacement';
@@ -16,8 +15,8 @@ import { PINS_CONFIG } from './config';
 export type CountryPinsLayerOptions = {
   canShow: () => boolean;
   container: HTMLElement;
-  getVisibleLabelRects: () => readonly VisibleLabelRect[];
   getLabelRect: (iso: string) => ScreenRect | null;
+  setHiddenByPins: (isoSet: ReadonlySet<string>) => void;
 };
 
 export class CountryPinsLayer {
@@ -33,6 +32,7 @@ export class CountryPinsLayer {
   private readonly worldPos = new THREE.Vector3();
   private readonly camDir = new THREE.Vector3();
   private readonly normal = new THREE.Vector3();
+  private readonly hiddenByPins = new Set<string>();
 
   constructor(
     private countries: CountriesMap,
@@ -122,12 +122,6 @@ export class CountryPinsLayer {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
 
-  private createVisibleRectMap(
-    labelRects: readonly VisibleLabelRect[]
-  ): ReadonlyMap<string, ScreenRect> {
-    return new Map(labelRects.map((item) => [item.iso, item.rect]));
-  }
-
   private createLayoutState(): PinsLayoutState | null {
     const viewportW = this.options.container.clientWidth;
     const viewportH = this.options.container.clientHeight;
@@ -137,16 +131,11 @@ export class CountryPinsLayer {
     this.cameraRight.setFromMatrixColumn(this.camera.matrixWorld, 0);
     this.cameraUp.setFromMatrixColumn(this.camera.matrixWorld, 1);
 
-    const visibleLabelRects = this.options.getVisibleLabelRects();
-    const visibleRectsByIso = this.createVisibleRectMap(visibleLabelRects);
-
     return {
       viewportW,
       viewportH,
       cameraRight: this.cameraRight,
       cameraUp: this.cameraUp,
-      visibleLabelRects,
-      visibleRectsByIso,
     };
   }
 
@@ -179,6 +168,7 @@ export class CountryPinsLayer {
   }
 
   private layoutPins(state: PinsLayoutState): void {
+    this.hiddenByPins.clear();
     this.group.updateWorldMatrix(true, false);
 
     this.proj.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
@@ -198,10 +188,20 @@ export class CountryPinsLayer {
         continue;
       }
 
+      for (const iso of this.countries.keys()) {
+        if (iso === entry.iso) continue;
+        const labelRect = this.options.getLabelRect(iso);
+        if (!labelRect) continue;
+        if (this.intersects(placement.pinRect, labelRect)) {
+          this.hiddenByPins.add(iso);
+        }
+      }
+
       entry.object.position.copy(placement.position);
       entry.hasPlacement = true;
       entry.targetOpacity = 1;
     }
+    this.options.setHiddenByPins(this.hiddenByPins);
   }
 
   public updateOpacity(delta: number): void {
@@ -229,6 +229,8 @@ export class CountryPinsLayer {
     const canShow = this.options.canShow();
 
     if (!canShow) {
+      this.hiddenByPins.clear();
+      this.options.setHiddenByPins(this.hiddenByPins);
       for (const entry of this.entries) {
         entry.targetOpacity = 0;
         entry.hasPlacement = false;
@@ -237,7 +239,11 @@ export class CountryPinsLayer {
     }
 
     const state = this.createLayoutState();
-    if (!state) return;
+    if (!state) {
+      this.hiddenByPins.clear();
+      this.options.setHiddenByPins(this.hiddenByPins);
+      return;
+    }
 
     this.layoutPins(state);
   }

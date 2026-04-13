@@ -162,19 +162,17 @@ export function createGlobe(
   engine.addController(pickController);
   engine.addController(focusController);
 
-  world.addToEarth(labelsLayer.object3d);
-
-  engine.addController(new CountryLabelsController(labelsLayer, labelsInteraction));
-
   const pinsLayer = new CountryPinsLayer(countries, pins, camera, EARTH_RADIUS, {
     canShow: canCountryInteract,
     container,
-    getVisibleLabelRects: () => labelsLayer.getVisibleLabelRects(),
     getLabelRect: (iso) => labelsLayer.getLabelRect(iso),
+    setHiddenByPins: (isoSet) => labelsLayer.setHiddenByPins(isoSet),
   });
 
   engine.addController(new CountryPinsController(pinsLayer));
+  world.addToEarth(labelsLayer.object3d);
 
+  engine.addController(new CountryLabelsController(labelsLayer, labelsInteraction));
   world.addToEarth(pinsLayer.object3d);
 
   engine.warmup();
