@@ -213,6 +213,12 @@ export class CountryLabelsLayer {
     return this.approxLabelRect(entry, viewportW, viewportH);
   }
 
+  private hiddenByPins: ReadonlySet<string> = new Set();
+
+  public setHiddenByPins(isoSet: ReadonlySet<string>): void {
+    this.hiddenByPins = new Set(isoSet);
+  }
+
   private selectStableVisible(
     candidates: LabelEntry[],
     viewportW: number,
@@ -404,6 +410,7 @@ export class CountryLabelsLayer {
         importanceH
       );
       if (!passImportance) continue;
+      if (this.hiddenByPins.has(entry.iso)) continue;
 
       const dot = entry.normal.dot(state.camDir);
       const passDot = this.passWithHysteresis(dot, state.horizonDot, wasAccepted, dotH);
