@@ -25,7 +25,7 @@ export function createCountryText(name: string, fontPx: number): Text {
   text.outlineWidth = 0.02;
   text.outlineBlur = 0;
   text.fillOpacity = 0;
-  text.visible = true;
+  text.visible = false;
 
   const material = new THREE.MeshBasicMaterial({
     transparent: true,

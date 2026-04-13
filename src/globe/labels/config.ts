@@ -7,4 +7,5 @@ export const LABELS_CONFIG: Omit<CountryLabelsLayerOptions, 'getZoomNormalized' 
   importanceHysteresis: 0.03,
   horizonMargin: 0.02,
   maxHorizonDot: 0.9,
+  maxVisible: 15
 };
