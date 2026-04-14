@@ -47,6 +47,7 @@ export class GlobeEngine {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
+      powerPreference: 'high-performance'
     });
 
     this.renderer.setSize(width, height);
