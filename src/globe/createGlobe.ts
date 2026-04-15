@@ -23,6 +23,9 @@ import { createCountryFocusSync } from './countryHighlightSync';
 import { CountryLabelInteractions } from './labels/countryLabelsInteractions';
 import { CountryPinsLayer } from './pins/countryPinsLayer';
 import { CountryPinsController } from './pins/countryPinController';
+import { CountryPinIntecations } from './pins/countryPinInteractions';
+import { CountryCursorSync } from './interactions/countryCursorSync';
+import { CountryCursorController } from './interactions/countryCursorController';
 import { LABELS_CONFIG } from './labels/config';
 
 export function createGlobe(
@@ -129,7 +132,7 @@ export function createGlobe(
     },
   });
 
-  const labelsInteraction = new CountryLabelInteractions({
+  const labelsInteractions = new CountryLabelInteractions({
     dom: renderer.domElement,
     camera,
     canInteract: canCountryInteract,
@@ -148,7 +151,6 @@ export function createGlobe(
       },
       canInteract: canCountryInteract,
       getFocusedIso: () => focusCoordinator.getFocusedIso(),
-      pickLabelIso: (clientX, clientY) => labelsInteraction.pickFocusedIso(clientX, clientY),
     }
   );
 
@@ -170,11 +172,28 @@ export function createGlobe(
     texture: assets.pinIcon,
   });
 
+  const pinsInteractions = new CountryPinIntecations({
+    dom: renderer.domElement,
+    camera,
+    canInteract: canCountryInteract,
+    getFocusedIso: () => focusCoordinator.getFocusedIso(),
+    getPinEntryByIso: (iso) => pinsLayer.getPinEntryByIso(iso),
+  });
+
+  const cursorSync = new CountryCursorSync({
+    dom: renderer.domElement,
+    canInteract: canCountryInteract,
+    pickLabelIso: (clientX, clientY) => labelsInteractions.pickLabelIso(clientX, clientY),
+    pickPinIso: (clientX, clientY) => pinsInteractions.pickPinIso(clientX, clientY),
+  });
+
   engine.addController(new CountryPinsController(pinsLayer));
   world.addToEarth(labelsLayer.object3d);
 
-  engine.addController(new CountryLabelsController(labelsLayer, labelsInteraction));
+  engine.addController(new CountryLabelsController(labelsLayer));
   world.addToEarth(pinsLayer.object3d);
+
+  engine.addController(new CountryCursorController(cursorSync));
 
   engine.warmup();
 

@@ -1,29 +1,29 @@
 import * as THREE from 'three';
-import type { LabelEntry } from './types';
+import type { PinEntry } from '../pins/types';
 
-type CountryLabelsInteractionOptions = {
+export type CountryPinInteractionOptions = {
   dom: HTMLElement;
   camera: THREE.PerspectiveCamera;
+  canInteract: () => boolean;
   getFocusedIso: () => string | null;
-  getEntryByIso: (iso: string) => LabelEntry | undefined;
-  canInteract?: () => boolean;
+  getPinEntryByIso: (iso: string) => PinEntry | undefined;
 };
 
-export class CountryLabelInteractions {
+export class CountryPinIntecations {
   private readonly raycaster = new THREE.Raycaster();
   private readonly mouse = new THREE.Vector2();
   private readonly _hitsBuffer: THREE.Intersection<THREE.Object3D>[] = [];
 
-  constructor(private options: CountryLabelsInteractionOptions) {}
+  constructor(private options: CountryPinInteractionOptions) {}
 
-  public pickLabelIso(clientX: number, clientY: number): string | null {
-    if (this.options.canInteract?.() === false) return null;
+  public pickPinIso(clientX: number, clientY: number): string | null {
+    if (this.options.canInteract() === false) return null;
 
     const focusedIso = this.options.getFocusedIso?.();
     if (!focusedIso) return null;
 
-    const entry = this.options.getEntryByIso(focusedIso);
-    if (!entry || !entry.label.visible || entry.opacity <= 0.05) return null;
+    const entry = this.options.getPinEntryByIso(focusedIso);
+    if (!entry || !entry.visible || entry.opacity <= 0.05) return null;
 
     const rect = this.options.dom.getBoundingClientRect();
     this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
@@ -31,7 +31,7 @@ export class CountryLabelInteractions {
 
     this.raycaster.setFromCamera(this.mouse, this.options.camera);
     this._hitsBuffer.length = 0;
-    this.raycaster.intersectObject(entry.label, false, this._hitsBuffer);
+    this.raycaster.intersectObject(entry.object, false, this._hitsBuffer);
 
     if (this._hitsBuffer.length === 0) return null;
     return focusedIso;

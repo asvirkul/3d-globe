@@ -34,6 +34,7 @@ export class CountryPinsLayer {
   private readonly camDir = new THREE.Vector3();
   private readonly normal = new THREE.Vector3();
   private readonly hiddenByPins = new Set<string>();
+  private readonly pinsByIso = new Map<string, PinEntry>();
 
   constructor(
     private countries: CountriesMap,
@@ -79,7 +80,7 @@ export class CountryPinsLayer {
       object.position.copy(anchor);
       this.group.add(object);
 
-      pinEntries.push({
+      const entry: PinEntry = {
         iso,
         meta,
         anchor,
@@ -88,7 +89,10 @@ export class CountryPinsLayer {
         opacity: 0,
         targetOpacity: 0,
         hasPlacement: false,
-      });
+      };
+
+      pinEntries.push(entry);
+      this.pinsByIso.set(iso, entry);
     }
     return pinEntries;
   }
@@ -99,6 +103,10 @@ export class CountryPinsLayer {
 
   public get object3d(): THREE.Group {
     return this.group;
+  }
+
+  public getPinEntryByIso(iso: string): PinEntry | undefined {
+    return this.pinsByIso.get(iso);
   }
 
   private createPinSprite(): THREE.Sprite {
@@ -257,6 +265,7 @@ export class CountryPinsLayer {
     }
 
     this.group.clear();
+    this.pinsByIso.clear();
     this.entries = [];
   }
 }

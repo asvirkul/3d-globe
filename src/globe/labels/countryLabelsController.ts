@@ -1,12 +1,8 @@
 import type { Controller } from '../../engine/GlobeEngine';
-import { CountryLabelInteractions } from './countryLabelsInteractions';
 import { CountryLabelsLayer } from './countryLabelsLayer';
 
 export class CountryLabelsController implements Controller {
-  constructor(
-    private layer: CountryLabelsLayer,
-    private interactions: CountryLabelInteractions
-  ) {}
+  constructor(private layer: CountryLabelsLayer) {}
 
   update(delta: number): void {
     this.layer.updateVisibility();
@@ -16,6 +12,5 @@ export class CountryLabelsController implements Controller {
 
   dispose(): void {
     this.layer.dispose();
-    this.interactions.dispose();
   }
 }
