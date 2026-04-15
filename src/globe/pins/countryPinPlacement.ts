@@ -14,7 +14,7 @@ export function resolvePinPlacement(
   const viewportW = state.viewportW;
   const viewportH = state.viewportH;
 
-  const gapY = -(PINS_CONFIG.labelGap + context.pinScreenSize * 0.5);
+  const gapY = -(PINS_CONFIG.labelGap + context.pinScreenSize * PINS_CONFIG.iconTipOffsetY);
   const gapX = 0;
 
   const x = labelRect.x + labelRect.w * 0.5;
