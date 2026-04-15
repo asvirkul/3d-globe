@@ -7,12 +7,14 @@ export type GlobeAssetUrls = {
   earth: string;
   clouds: string;
   lights: string;
+  pinIcon: string;
 };
 
 export type GlobeAssets = {
   earth: THREE.Texture;
   clouds: THREE.Texture;
   lights: THREE.Texture;
+  pinIcon: THREE.Texture;
 };
 
 export function resolveAssetProfile(): GlobeAssetProfile {
@@ -27,11 +29,13 @@ const ASSET_URLS_PROFILE: Record<GlobeAssetProfile, (baseUrl: string) => GlobeAs
     earth: `${baseUrl}assets/textures/earth-8k.webp`,
     clouds: `${baseUrl}assets/textures/clouds-2k.webp`,
     lights: `${baseUrl}assets/textures/lights-8k.webp`,
+    pinIcon: `${baseUrl}assets/icons/pin.svg`,
   }),
   compact: (baseUrl) => ({
     earth: `${baseUrl}assets/textures/earth-4k.webp`,
     clouds: `${baseUrl}assets/textures/clouds-2k.webp`,
     lights: `${baseUrl}assets/textures/lights-4k.webp`,
+    pinIcon: `${baseUrl}assets/icons/pin.svg`,
   }),
 };
 
@@ -43,13 +47,14 @@ export async function loadGlobeAssets(
     const baseUrl = import.meta.env.BASE_URL;
     const urls = ASSET_URLS_PROFILE[profile](baseUrl);
 
-    const [earth, clouds, lights] = await Promise.all([
+    const [earth, clouds, lights, pinIcon] = await Promise.all([
       loader.loadAsync(urls.earth),
       loader.loadAsync(urls.clouds),
       loader.loadAsync(urls.lights),
+      loader.loadAsync(urls.pinIcon),
     ]);
 
-    return { ok: true, value: { earth, clouds, lights } };
+    return { ok: true, value: { earth, clouds, lights, pinIcon } };
   } catch {
     return { ok: false, error: 'Texture loading error' };
   }

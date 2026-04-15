@@ -17,6 +17,7 @@ export type CountryPinsLayerOptions = {
   container: HTMLElement;
   getLabelRectsByIso: () => ReadonlyMap<string, ScreenRect>;
   setHiddenByPins: (isoSet: ReadonlySet<string>) => void;
+  texture: THREE.Texture;
 };
 
 export class CountryPinsLayer {
@@ -26,7 +27,7 @@ export class CountryPinsLayer {
   private readonly cameraRight = new THREE.Vector3();
   private readonly cameraUp = new THREE.Vector3();
   private readonly pinsLayoutContext: PinsLayoutContext;
-  private readonly pinScreenSize = 16; // px
+  private readonly pinScreenSize = PINS_CONFIG.screenSize;
   private readonly proj = new THREE.Matrix4();
   private readonly frustum = new THREE.Frustum();
   private readonly worldPos = new THREE.Vector3();
@@ -101,6 +102,7 @@ export class CountryPinsLayer {
   }
 
   private createPinSprite(): THREE.Sprite {
+    const texture = this.options.texture;
     const material = new THREE.SpriteMaterial({
       color: '#ffffff',
       depthTest: false,
@@ -108,10 +110,11 @@ export class CountryPinsLayer {
       transparent: true,
       opacity: 0,
       toneMapped: false,
+      map: texture,
     });
     const pinSprite = new THREE.Sprite(material);
 
-    pinSprite.scale.set(this.pinWorldSize, this.pinWorldSize, 1);
+    pinSprite.scale.set(this.pinWorldSize * PINS_CONFIG.iconAspect, this.pinWorldSize, 1);
     pinSprite.visible = false;
 
     return pinSprite;

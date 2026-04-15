@@ -167,6 +167,7 @@ export function createGlobe(
     container,
     getLabelRectsByIso: () => labelsLayer.getLabelRectsByIso(),
     setHiddenByPins: (isoSet) => labelsLayer.setHiddenByPins(isoSet),
+    texture: assets.pinIcon,
   });
 
   engine.addController(new CountryPinsController(pinsLayer));
