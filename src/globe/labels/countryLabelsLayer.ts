@@ -11,7 +11,7 @@ import type {
 import { buildAreaScale, getLabelSizePx, resolveImportance } from './areaScale';
 import { createCountryText } from './troikaText';
 import { lon2xyz } from '../../engine/utils/geo';
-import { dampColor, isColorNear, isTargetNear } from './labelStyle';
+import { dampColor, isColorNear, isTargetNear } from '../animations';
 import { isValidArea, isValidCoord } from '../geo/geo';
 
 function getBlockBounds(label: TroikaTextRenderInfo): BlockBounds | null {

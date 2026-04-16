@@ -1,5 +1,5 @@
-import type { Controller } from '../../engine/GlobeEngine';
 import { CountryLabelsLayer } from './countryLabelsLayer';
+import type { Controller } from '../../engine/GlobeEngine';
 
 export class CountryLabelsController implements Controller {
   constructor(private layer: CountryLabelsLayer) {}

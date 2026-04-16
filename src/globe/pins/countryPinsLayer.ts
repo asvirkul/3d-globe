@@ -8,6 +8,7 @@ import type {
 } from './types';
 import type { CountriesMap } from '../borders/types';
 import { lon2xyz } from '../../engine/utils/geo';
+import { isColorNear, dampColor } from '../animations';
 import { isValidCoord } from '../geo/geo';
 import { resolvePinPlacement } from './countryPinsPlacement';
 import { PINS_CONFIG } from './config';
@@ -247,24 +248,14 @@ export class CountryPinsLayer {
     this.options.setHiddenByPins(this.hiddenByPins);
   }
 
-  private dampColor(out: THREE.Color, target: THREE.Color, lambda: number, dt: number): void {
-    out.r = THREE.MathUtils.damp(out.r, target.r, lambda, dt);
-    out.g = THREE.MathUtils.damp(out.g, target.g, lambda, dt);
-    out.b = THREE.MathUtils.damp(out.b, target.b, lambda, dt);
-  }
-
-  private isColorNear(a: THREE.Color, b: THREE.Color, eps = 0.001): boolean {
-    return Math.abs(a.r - b.r) < eps && Math.abs(a.g - b.g) < eps && Math.abs(a.b - b.b) < eps;
-  }
-
   public updateColor(delta: number): void {
     const deltaSec = delta / 60;
     for (let i = this._colorAnimatingBuffer.length - 1; i >= 0; i--) {
       const entry = this._colorAnimatingBuffer[i];
-      this.dampColor(entry.color, entry.targetColor, 8, deltaSec);
+      dampColor(entry.color, entry.targetColor, 8, deltaSec);
       entry.object.material.color.copy(entry.color);
 
-      if (this.isColorNear(entry.color, entry.targetColor)) {
+      if (isColorNear(entry.color, entry.targetColor)) {
         entry.color.copy(entry.targetColor);
         entry.object.material.color.copy(entry.color);
         this._colorAnimatingBuffer.splice(i, 1);
