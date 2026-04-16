@@ -9,7 +9,7 @@ export type CountryPinInteractionOptions = {
   getPinEntryByIso: (iso: string) => PinEntry | undefined;
 };
 
-export class CountryPinIntecations {
+export class CountryPinInteractions {
   private readonly raycaster = new THREE.Raycaster();
   private readonly mouse = new THREE.Vector2();
   private readonly _hitsBuffer: THREE.Intersection<THREE.Object3D>[] = [];

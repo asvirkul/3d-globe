@@ -19,6 +19,8 @@ export type PinEntry = {
   targetOpacity: number;
   opacity: number;
   hasPlacement: boolean;
+  color: THREE.Color;
+  targetColor: THREE.Color;
 };
 
 export type PinsLayoutState = {

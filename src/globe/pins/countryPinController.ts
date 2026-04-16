@@ -7,6 +7,7 @@ export class CountryPinsController implements Controller {
   public update(delta: number): void {
     this.layer.updateVisibility();
     this.layer.updateOpacity(delta);
+    this.layer.updateColor(delta);
   }
 
   public dispose(): void {

@@ -35,6 +35,8 @@ export class CountryPinsLayer {
   private readonly normal = new THREE.Vector3();
   private readonly hiddenByPins = new Set<string>();
   private readonly pinsByIso = new Map<string, PinEntry>();
+  private readonly _colorAnimatingBuffer: PinEntry[] = [];
+  private focusedIso: string | null = null;
 
   constructor(
     private countries: CountriesMap,
@@ -89,6 +91,8 @@ export class CountryPinsLayer {
         opacity: 0,
         targetOpacity: 0,
         hasPlacement: false,
+        color: new THREE.Color(PINS_CONFIG.defaultColor),
+        targetColor: new THREE.Color(PINS_CONFIG.defaultColor),
       };
 
       pinEntries.push(entry);
@@ -112,7 +116,7 @@ export class CountryPinsLayer {
   private createPinSprite(): THREE.Sprite {
     const texture = this.options.texture;
     const material = new THREE.SpriteMaterial({
-      color: '#ffffff',
+      color: PINS_CONFIG.defaultColor,
       depthTest: false,
       depthWrite: false,
       transparent: true,
@@ -161,6 +165,34 @@ export class CountryPinsLayer {
     const maxDot = PINS_CONFIG.maxDot;
 
     return THREE.MathUtils.clamp(base + margin, 0, maxDot);
+  }
+
+  private enqueueColorAnimation(entry: PinEntry): void {
+    if (!this._colorAnimatingBuffer.includes(entry)) {
+      this._colorAnimatingBuffer.push(entry);
+    }
+  }
+
+  public setFocusedIso(nextIso: string | null): void {
+    if (this.focusedIso === nextIso) return;
+
+    if (this.focusedIso) {
+      const prevPin = this.pinsByIso.get(this.focusedIso);
+      if (prevPin) {
+        prevPin.targetColor.set(PINS_CONFIG.defaultColor);
+        this.enqueueColorAnimation(prevPin);
+      }
+    }
+
+    this.focusedIso = nextIso;
+
+    if (nextIso) {
+      const nextEntry = this.pinsByIso.get(nextIso);
+      if (nextEntry) {
+        nextEntry.targetColor.set(PINS_CONFIG.focusedColor);
+        this.enqueueColorAnimation(nextEntry);
+      }
+    }
   }
 
   private getWorldPos(entry: PinEntry): THREE.Vector3 {
@@ -213,6 +245,31 @@ export class CountryPinsLayer {
       entry.targetOpacity = 1;
     }
     this.options.setHiddenByPins(this.hiddenByPins);
+  }
+
+  private dampColor(out: THREE.Color, target: THREE.Color, lambda: number, dt: number): void {
+    out.r = THREE.MathUtils.damp(out.r, target.r, lambda, dt);
+    out.g = THREE.MathUtils.damp(out.g, target.g, lambda, dt);
+    out.b = THREE.MathUtils.damp(out.b, target.b, lambda, dt);
+  }
+
+  private isColorNear(a: THREE.Color, b: THREE.Color, eps = 0.001): boolean {
+    return Math.abs(a.r - b.r) < eps && Math.abs(a.g - b.g) < eps && Math.abs(a.b - b.b) < eps;
+  }
+
+  public updateColor(delta: number): void {
+    const deltaSec = delta / 60;
+    for (let i = this._colorAnimatingBuffer.length - 1; i >= 0; i--) {
+      const entry = this._colorAnimatingBuffer[i];
+      this.dampColor(entry.color, entry.targetColor, 8, deltaSec);
+      entry.object.material.color.copy(entry.color);
+
+      if (this.isColorNear(entry.color, entry.targetColor)) {
+        entry.color.copy(entry.targetColor);
+        entry.object.material.color.copy(entry.color);
+        this._colorAnimatingBuffer.splice(i, 1);
+      }
+    }
   }
 
   public updateOpacity(delta: number): void {

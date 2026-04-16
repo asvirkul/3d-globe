@@ -23,7 +23,7 @@ import { createCountryFocusSync } from './countryHighlightSync';
 import { CountryLabelInteractions } from './labels/countryLabelsInteractions';
 import { CountryPinsLayer } from './pins/countryPinsLayer';
 import { CountryPinsController } from './pins/countryPinController';
-import { CountryPinIntecations } from './pins/countryPinInteractions';
+import { CountryPinInteractions } from './pins/countryPinInteractions';
 import { CountryCursorSync } from './interactions/countryCursorSync';
 import { CountryCursorController } from './interactions/countryCursorController';
 import { LABELS_CONFIG } from './labels/config';
@@ -120,6 +120,14 @@ export function createGlobe(
     filters: [],
   });
 
+  const pinsLayer = new CountryPinsLayer(countries, pins, camera, EARTH_RADIUS, {
+    canShow: canCountryInteract,
+    container,
+    getLabelRectsByIso: () => labelsLayer.getLabelRectsByIso(),
+    setHiddenByPins: (isoSet) => labelsLayer.setHiddenByPins(isoSet),
+    texture: assets.pinIcon,
+  });
+
   const focusSync = createCountryFocusSync({
     canInteract: canCountryInteract,
     highlightBorder: bordersLayer.highlight,
@@ -128,6 +136,7 @@ export function createGlobe(
   const focusCoordinator = new CountryFocusCoordinator({
     onFocusChange: (iso) => {
       labelsLayer.setFocusedIso(iso);
+      pinsLayer.setFocusedIso(iso);
       focusSync.sync(iso);
     },
   });
@@ -149,6 +158,7 @@ export function createGlobe(
       onPick: (iso) => {
         options.onCountryPick?.(iso);
       },
+      pickLabelIso: (clientX, clientY) => labelsInteractions.pickLabelIso(clientX, clientY),
       canInteract: canCountryInteract,
       getFocusedIso: () => focusCoordinator.getFocusedIso(),
     }
@@ -164,15 +174,7 @@ export function createGlobe(
   engine.addController(pickController);
   engine.addController(focusController);
 
-  const pinsLayer = new CountryPinsLayer(countries, pins, camera, EARTH_RADIUS, {
-    canShow: canCountryInteract,
-    container,
-    getLabelRectsByIso: () => labelsLayer.getLabelRectsByIso(),
-    setHiddenByPins: (isoSet) => labelsLayer.setHiddenByPins(isoSet),
-    texture: assets.pinIcon,
-  });
-
-  const pinsInteractions = new CountryPinIntecations({
+  const pinsInteractions = new CountryPinInteractions({
     dom: renderer.domElement,
     camera,
     canInteract: canCountryInteract,
