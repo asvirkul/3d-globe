@@ -9,7 +9,7 @@ import type {
 import type { CountriesMap } from '../borders/types';
 import { lon2xyz } from '../../engine/utils/geo';
 import { isValidCoord } from '../geo/geo';
-import { resolvePinPlacement } from './countryPinPlacement';
+import { resolvePinPlacement } from './countryPinsPlacement';
 import { PINS_CONFIG } from './config';
 
 export type CountryPinsLayerOptions = {

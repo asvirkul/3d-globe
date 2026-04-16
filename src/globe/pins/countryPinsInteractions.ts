@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import type { PinEntry } from '../pins/types';
+import type { PinEntry } from './types';
 
-export type CountryPinInteractionOptions = {
+export type CountryPinsInteractionOptions = {
   dom: HTMLElement;
   camera: THREE.PerspectiveCamera;
   canInteract: () => boolean;
@@ -14,7 +14,7 @@ export class CountryPinInteractions {
   private readonly mouse = new THREE.Vector2();
   private readonly _hitsBuffer: THREE.Intersection<THREE.Object3D>[] = [];
 
-  constructor(private options: CountryPinInteractionOptions) {}
+  constructor(private options: CountryPinsInteractionOptions) {}
 
   public pickPinIso(clientX: number, clientY: number): string | null {
     if (this.options.canInteract() === false) return null;
