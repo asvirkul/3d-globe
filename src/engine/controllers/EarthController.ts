@@ -11,6 +11,7 @@ export class EarthController implements Controller {
   private autoRotate: boolean;
   private rotateSpeed: number;
   private initialAutoRotate: boolean;
+  private autoRotateBlocker: (() => boolean) | null = null;
 
   constructor(cameraController: CameraController, options: EarthControllerOptions = {}) {
     this.cameraController = cameraController;
@@ -19,6 +20,17 @@ export class EarthController implements Controller {
     this.autoRotate = this.initialAutoRotate;
 
     this.rotateSpeed = options.rotateSpeed ?? 0.001;
+  }
+
+  public setAutoRotateBlocker(blocker: (() => boolean) | null): void {
+    this.autoRotateBlocker = blocker;
+  }
+
+  private get shouldAutoRotate(): boolean {
+    const isBlocked = this.autoRotateBlocker?.() ?? false;
+    if (!this.autoRotate) return false;
+
+    return this.autoRotate && !isBlocked;
   }
 
   public pauseAutoRotate(): void {
@@ -37,6 +49,7 @@ export class EarthController implements Controller {
 
   public update(delta: number): void {
     if (!this.autoRotate) return;
+    if (!this.shouldAutoRotate) return;
 
     this.cameraController.addLatLon(0, this.rotateSpeed * delta);
   }

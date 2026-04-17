@@ -33,6 +33,10 @@ export class CountryFocusCoordinator {
     return this.focusedIso;
   }
 
+  public isFocused(): boolean {
+    return this.focusedIso !== null;
+  }
+
   public clear(): void {
     this.pendingIso = null;
     this.pendingTime = 0;

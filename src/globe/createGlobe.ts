@@ -171,6 +171,8 @@ export function createGlobe(
     },
   });
 
+  earthController.setAutoRotateBlocker(() => focusCoordinator.isFocused());
+
   engine.addController(pickController);
   engine.addController(focusController);
 
