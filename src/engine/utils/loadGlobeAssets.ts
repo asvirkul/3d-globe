@@ -17,10 +17,26 @@ export type GlobeAssets = {
   pinIcon: THREE.Texture;
 };
 
+export type NetworkInfo = {
+  effectiveType?: '2g' | '3g' | '4g' | 'slow-2g';
+  saveData?: boolean;
+};
+
+export type NavigatorConnection = Navigator & {
+  connection?: NetworkInfo;
+};
+
 export function resolveAssetProfile(): GlobeAssetProfile {
   const pixelWidth = window.innerWidth * (window.devicePixelRatio || 1);
 
-  if (pixelWidth <= 1600) return 'compact';
+  const connection = (navigator as NavigatorConnection).connection;
+  const slowConnection =
+    connection?.effectiveType === '2g' ||
+    connection?.effectiveType === '3g' ||
+    connection?.saveData === true;
+
+  if (slowConnection) return 'compact';
+  if (pixelWidth <= 1800) return 'compact';
   return 'default';
 }
 
