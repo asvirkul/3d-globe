@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Result } from '../../globe/types';
 
 export type GlobeAssetProfile = 'compact' | 'default';
+const COMPACT_PIXEL_WIDTH = 1800;
 
 export type GlobeAssetUrls = {
   earth: string;
@@ -36,7 +37,7 @@ export function resolveAssetProfile(): GlobeAssetProfile {
     connection?.saveData === true;
 
   if (slowConnection) return 'compact';
-  if (pixelWidth <= 1800) return 'compact';
+  if (pixelWidth <= COMPACT_PIXEL_WIDTH) return 'compact';
   return 'default';
 }
 
@@ -71,7 +72,7 @@ export async function loadGlobeAssets(
     ]);
 
     return { ok: true, value: { earth, clouds, lights, pinIcon } };
-  } catch {
-    return { ok: false, error: 'Texture loading error' };
+  } catch (error) {
+    return { ok: false, error: `Texture loading error: ${String(error)}` };
   }
 }
