@@ -1,6 +1,30 @@
 import type { Result } from '../types';
 import type { CountriesMap, BBox, CountryGeometry, CountryFeature } from './types';
 
+type RawGeoJsonFeature = {
+  properties: Record<string, unknown> | null;
+  geometry: {
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: unknown;
+  } | null;
+};
+
+type RawGeoJsonFeatureCollection = {
+  type: 'FeatureCollection';
+  features: RawGeoJsonFeature[];
+};
+
+function isTypeValid(value: unknown): value is RawGeoJsonFeatureCollection {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    value.type === 'FeatureCollection' &&
+    'features' in value &&
+    Array.isArray(value.features)
+  );
+}
+
 export function computeBB(geometry: CountryGeometry): BBox {
   let minLon = Infinity;
   let minLat = Infinity;
@@ -47,15 +71,18 @@ export async function loadCountries(): Promise<Result<CountriesMap>> {
       return { ok: false, error: 'Invalid content type' };
     }
 
-    const geojson = await res.json();
-    if (geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
+    const geojson: unknown = await res.json();
+
+    if (!isTypeValid(geojson)) {
       return { ok: false, error: 'Invalid GeoJSON structure' };
     }
 
     const countries = new Map<string, CountryFeature>();
 
     for (const feature of geojson.features) {
-      const props = feature?.properties ?? {};
+      if (!feature.properties || !feature.geometry) continue;
+      const props = feature.properties;
+
       const nameRaw = props.name ?? props.NAME ?? props.Name;
       const areaRaw = props.area_km2 ?? props.AREA_KM2 ?? props.Area_Km2;
       const labelLonRaw = props.label_lon ?? props.LABEL_LON ?? props.Label_Lon;
@@ -63,7 +90,7 @@ export async function loadCountries(): Promise<Result<CountriesMap>> {
       const overrideRaw =
         props.importance_override ?? props.IMPORTANCE_OVERRIDE ?? props.Importance_Override;
       const iso = props.ISO_A2 ?? props.iso_a2 ?? props.Iso_A2;
-      const geometry = feature?.geometry;
+      const geometry = feature.geometry;
       const name =
         typeof nameRaw === 'string' && nameRaw.trim().length > 0 ? nameRaw.trim() : undefined;
       const areaNum = typeof areaRaw === 'number' ? areaRaw : Number(areaRaw);
@@ -89,7 +116,6 @@ export async function loadCountries(): Promise<Result<CountriesMap>> {
 
       if (
         typeof iso !== 'string' ||
-        !geometry ||
         !(geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') ||
         !Array.isArray(geometry.coordinates)
       ) {
@@ -110,12 +136,12 @@ export async function loadCountries(): Promise<Result<CountriesMap>> {
           label_lon: labelLon,
           importance_override: importanceOverride,
         },
-        geometry,
-        bbox: computeBB(geometry),
+        geometry: geometry as CountryGeometry,
+        bbox: computeBB(geometry as CountryGeometry),
       });
     }
     return { ok: true, value: countries };
-  } catch {
-    return { ok: false, error: 'Failed to load countries data' };
+  } catch (error) {
+    return { ok: false, error: `Failed to load countries data: ${String(error)}`};
   }
 }
