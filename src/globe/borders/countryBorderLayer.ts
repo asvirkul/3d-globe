@@ -27,7 +27,7 @@ export function createCountryBordersLayer(
     if (!iso) return;
     const feature = countries.get(iso.toUpperCase());
     if (!feature) {
-      console.warn('ISO code on found');
+      console.warn('ISO code not found');
       return;
     }
 
