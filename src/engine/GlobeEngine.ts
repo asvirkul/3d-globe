@@ -47,7 +47,7 @@ export class GlobeEngine {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
     });
 
     this.renderer.setSize(width, height);
@@ -115,6 +115,22 @@ export class GlobeEngine {
     this.scene.remove(object);
   }
 
+  private hasGeometry(object: THREE.Object3D): object is THREE.Object3D & {
+    geometry: { dispose?: () => void };
+  } {
+    return 'geometry' in object;
+  }
+
+  private hasMaterial(object: THREE.Object3D): object is THREE.Object3D & {
+    material: THREE.Material | THREE.Material[];
+  } {
+    return 'material' in object;
+  }
+
+  private isTextureLike(value: unknown): value is THREE.Texture {
+    return typeof value === 'object' && value !== null && 'isTexture' in value;
+  }
+
   public destroy(): void {
     this.stop();
     this.resizeObserver?.disconnect();
@@ -124,23 +140,20 @@ export class GlobeEngine {
     this.controllers = [];
 
     this.scene.traverse((obj) => {
-      const anyObj = obj as any;
-
-      if (anyObj.geometry) {
-        anyObj.geometry.dispose?.();
-      }
-
-      if (anyObj.material) {
-        const materials = Array.isArray(anyObj.material) ? anyObj.material : [anyObj.material];
+      if (this.hasMaterial(obj)) {
+        const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
 
         for (const m of materials) {
-          for (const key in m) {
-            const value = (m as any)[key];
-            if (value && value.isTexture) {
-              value.dispose?.();
+          const materialRecord = m as unknown as Record<string, unknown>;
+
+          for (const key in materialRecord) {
+            const value = materialRecord[key];
+            if (this.isTextureLike(value)) {
+              value.dispose();
             }
           }
-          m.dispose?.();
+
+          m.dispose();
         }
       }
     });
