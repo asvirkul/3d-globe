@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import type { Controller } from '../GlobeEngine';
 import { CameraController } from './CameraController';
+import type { Controller } from '../GlobeEngine';
 
 export class OrbitController implements Controller {
   private cameraController: CameraController;
@@ -14,7 +14,7 @@ export class OrbitController implements Controller {
   private mouse = new THREE.Vector2();
   private camera: THREE.PerspectiveCamera;
   private globe: THREE.Object3D;
-  private isDraggingGlobe = false;
+  private isGlobeDragActive = false;
   private abort = new AbortController();
   public onStartDrag?: () => void;
   public onEndDrag?: () => void;
@@ -48,7 +48,6 @@ export class OrbitController implements Controller {
     if (this.pointers.size === 0) {
       const intersects = this.raycaster.intersectObject(this.globe);
       if (intersects.length === 0) return;
-      this.isDraggingGlobe = true;
     }
     this.pointers.set(e.pointerId, e);
     this.dom.setPointerCapture(e.pointerId);
@@ -56,6 +55,7 @@ export class OrbitController implements Controller {
     if (this.pointers.size === 1) {
       this.lastRotate.x = e.clientX;
       this.lastRotate.y = e.clientY;
+      this.isGlobeDragActive = true;
       this.onStartDrag?.();
     }
 
@@ -66,7 +66,7 @@ export class OrbitController implements Controller {
 
   private onMove = (e: PointerEvent): void => {
     if (!this.pointers.has(e.pointerId)) return;
-    if (!this.isDraggingGlobe) return;
+    if (!this.isGlobeDragActive) return;
 
     this.pointers.set(e.pointerId, e);
 
@@ -115,6 +115,7 @@ export class OrbitController implements Controller {
     }
 
     if (this.pointers.size === 0) {
+      this.isGlobeDragActive = false;
       this.onEndDrag?.();
     }
 
@@ -150,7 +151,7 @@ export class OrbitController implements Controller {
     this.abort.abort();
     this.pointers.clear();
     this.lastPinchDistance = null;
-    this.isDraggingGlobe = false;
+    this.isGlobeDragActive = false;
   }
 
   public update(_delta: number): void {}
