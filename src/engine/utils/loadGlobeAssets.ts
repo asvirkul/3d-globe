@@ -32,9 +32,10 @@ export function resolveAssetProfile(): GlobeAssetProfile {
 
   const connection = (navigator as NavigatorConnection).connection;
   const slowConnection =
-    connection?.effectiveType === '2g' ||
-    connection?.effectiveType === '3g' ||
-    connection?.saveData === true;
+  connection?.effectiveType === '2g' ||
+  connection?.effectiveType === '3g' ||
+  connection?.effectiveType === 'slow-2g' ||
+  connection?.saveData === true;
 
   if (slowConnection) return 'compact';
   if (pixelWidth <= COMPACT_PIXEL_WIDTH) return 'compact';
