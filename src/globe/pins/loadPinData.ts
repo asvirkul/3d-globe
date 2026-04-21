@@ -8,7 +8,7 @@ function isCountryPinMetaValid(value: unknown): value is CountryPinMeta {
   return isCompanyCountValid(candidate.companyCount);
 }
 
-function isCountryPinResValid(value: unknown): value is CountryPinResponse {
+function isCountryPinResponseValid(value: unknown): value is CountryPinResponse {
   if (typeof value !== 'object' || value === null) return false;
 
   const candidate = value as Record<string, unknown>;
@@ -49,10 +49,10 @@ export async function loadPinData(signal?: AbortSignal): Promise<Result<CountryP
 
     const json: unknown = await res.json();
 
-    if (!isCountryPinResValid(json)) {
+    if (!isCountryPinResponseValid(json)) {
       return {
         ok: false,
-        error: 'Invalid pin data res',
+        error: 'Invalid pin data structure',
       };
     }
 
