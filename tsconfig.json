@@ -17,12 +17,6 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
 
-    "baseUrl": "./src",
-    "paths": {
-      "@engine/*": ["engine/*"],
-      "@globe/*": ["globe/*"]
-    },
-
     "noEmit": true
   },
   "include": ["src"],
