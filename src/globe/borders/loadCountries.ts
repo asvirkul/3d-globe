@@ -57,10 +57,10 @@ export function computeBB(geometry: CountryGeometry): BBox {
   return [minLon, minLat, maxLon, maxLat];
 }
 
-export async function loadCountries(): Promise<Result<CountriesMap>> {
+export async function loadCountries(signal?: AbortSignal): Promise<Result<CountriesMap>> {
   try {
     const base = import.meta.env.BASE_URL;
-    const res = await fetch(`${base}assets/data/border.json`);
+    const res = await fetch(`${base}assets/data/border.json`, {signal});
 
     if (!res.ok) {
       return { ok: false, error: `HTTP ${res.status}` };
@@ -142,6 +142,9 @@ export async function loadCountries(): Promise<Result<CountriesMap>> {
     }
     return { ok: true, value: countries };
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return { ok: false, error: 'Load countries data request was aborted' };
+    }
     return { ok: false, error: `Failed to load countries data: ${String(error)}`};
   }
 }

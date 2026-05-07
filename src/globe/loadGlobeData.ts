@@ -12,11 +12,11 @@ export type GlobeData = {
   pins: CountryPinData;
 };
 
-export async function loadGlobeData(): Promise<Result<GlobeData>> {
+export async function loadGlobeData(signal?: AbortSignal): Promise<Result<GlobeData>> {
   const [assets, countries, pins] = await Promise.all([
     loadGlobeAssets(),
-    loadCountries(),
-    loadPinData(),
+    loadCountries(signal),
+    loadPinData(signal),
   ]);
 
   if (!assets.ok) {
