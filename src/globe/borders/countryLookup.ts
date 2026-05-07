@@ -1,7 +1,7 @@
 import type { CountriesMap } from './types';
 import { pointInPolygon, pointInBBox } from './pointInPolygon';
 
-function normalizeLon(lon: number): number {
+export function normalizeLon(lon: number): number {
   return ((((lon + 180) % 360) + 360) % 360) - 180;
 }
 
