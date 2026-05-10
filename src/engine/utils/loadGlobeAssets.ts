@@ -47,13 +47,13 @@ const ASSET_URLS_PROFILE: Record<GlobeAssetProfile, (baseUrl: string) => GlobeAs
     earth: `${baseUrl}assets/textures/earth-8k.webp`,
     clouds: `${baseUrl}assets/textures/clouds-2k.webp`,
     lights: `${baseUrl}assets/textures/lights-8k.webp`,
-    pinIcon: `${baseUrl}assets/icons/pin.svg`,
+    pinIcon: `${baseUrl}assets/icons/pin.png`,
   }),
   compact: (baseUrl) => ({
     earth: `${baseUrl}assets/textures/earth-4k.webp`,
     clouds: `${baseUrl}assets/textures/clouds-2k.webp`,
     lights: `${baseUrl}assets/textures/lights-4k.webp`,
-    pinIcon: `${baseUrl}assets/icons/pin.svg`,
+    pinIcon: `${baseUrl}assets/icons/pin.png`,
   }),
 };
 
